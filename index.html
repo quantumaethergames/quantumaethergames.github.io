@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dreamforge Studios</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Cinzel', serif;
+      background: linear-gradient(to bottom right, #1a237e, #512da8, #2d6a4f);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 4rem;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+      text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
+      margin-bottom: 20px;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .btn {
+      background: linear-gradient(to right, #3f51b5, #9c27b0);
+      color: white;
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 15px 25px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn:hover {
+      background: linear-gradient(to right, #9c27b0, #3f51b5);
+      transform: scale(1.05);
+    }
+
+    .socials {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .socials img {
+      width: 40px;
+      height: 40px;
+      transition: transform 0.3s;
+    }
+
+    .socials img:hover {
+      transform: scale(1.3);
+    }
+
+    svg {
+      position: absolute;
+      width: 0;
+      height: 0;
+    }
+
+    .cosmic-glow {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background-color: rgba(63, 81, 181, 0.3);
+      animation: pulse 3s infinite;
+    }
+
+    .pulse {
+      animation: pulse 3s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.3;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 0.3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="audio-canvas"></canvas>
+
+  <h1>Dreamforge Studios</h1>
+
+  <a href="https://store.steampowered.com/app/your-game-id" target="_blank" rel="noopener noreferrer" class="btn">
+    Play Our Game on Steam
+  </a>
+
+  <div class="socials">
+    <a href="https://twitter.com/yourhandle" target="_blank" rel="noopener noreferrer">
+      <img src="/icons/twitter.svg" alt="Twitter">
+    </a>
+    <a href="https://instagram.com/yourhandle" target="_blank" rel="noopener noreferrer">
+      <img src="/icons/instagram.svg" alt="Instagram">
+    </a>
+    <a href="https://youtube.com/yourhandle" target="_blank" rel="noopener noreferrer">
+      <img src="/icons/youtube.svg" alt="YouTube">
+    </a>
+  </div>
+
+  <svg class="cosmic-glow">
+    <filter id="gooey-effect">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+      <feColorMatrix in="blur" mode="matrix"
+        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
+      <feBlend in="SourceGraphic" in2="goo" />
+    </filter>
+  </svg>
+
+  <script>
+    const canvas = document.getElementById('audio-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 128;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      const source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      function draw() {
+        requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArray);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < bufferLength; i++) {
+          const value = dataArray[i];
+          const radius = value / 2;
+          const angle = (i / bufferLength) * Math.PI * 2;
+          const x = canvas.width / 2 + Math.cos(angle) * radius * 3;
+          const y = canvas.height / 2 + Math.sin(angle) * radius * 3;
+
+          ctx.beginPath();
+          ctx.arc(x, y, radius / 5, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${i * 6}, 100%, 70%, 0.3)`;
+          ctx.fill();
+        }
+      }
+
+      draw();
+    });
+  </script>
+</body>
+</html>
