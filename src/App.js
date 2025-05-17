@@ -1,6 +1,11 @@
 // App.jsx - Main component
 import React from 'react';
 import './App.css';
+import cinematicVideo from './videos/cinematic.mp4';
+import logoImage from './img/Logo-4k-v3.png';
+
+// And update the video and img src attributes to use these variables:
+
 
 function App() {
   return (
@@ -15,10 +20,10 @@ function VideoBackgroundSection() {
   return (
       <section className="video-background-section">
         <div className="video-wrapper">
-          <video autoPlay muted loop playsInline src="videos/cinematic.mp4"></video>
+            <video autoPlay muted loop playsInline src={cinematicVideo}></video>
         </div>
 
-        {/* Overlay container: title → iframe → logo */}
+          {/* Overlay container: title → iframe → logo */}
         <div className="overlay">
           {/* 1) Title above the iframe */}
           <h2 className="overlay-title">Imagining Post-Colonial Worlds</h2>
@@ -30,7 +35,7 @@ function VideoBackgroundSection() {
                 marginTop: "1rem",
                 filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.7))"
               }}
-              src="img/Logo-4k-v3.png"
+              src={logoImage}
               alt="Logo"
           />
 
