@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bubble Mask Website</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #0e0e0e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .main-bubble {
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+      animation: float 6s ease-in-out infinite;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .main-bubble img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .bubble {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      animation: orbit 12s linear infinite;
+      mix-blend-mode: screen;
+      opacity: 0.6;
+    }
+
+    .bubble img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .bubble:nth-child(1) { top: -150px; left: 50%; animation-delay: 0s; }
+    .bubble:nth-child(2) { bottom: -120px; right: 10%; animation-delay: 2s; }
+    .bubble:nth-child(3) { top: 30%; left: -100px; animation-delay: 4s; }
+    .bubble:nth-child(4) { bottom: 20%; right: -120px; animation-delay: 6s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    @keyframes orbit {
+      0% {
+        transform: rotate(0deg) translateX(200px) rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg) translateX(200px) rotate(-360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="main-bubble">
+  <img src="img/IF-nobackground.png" alt="Main Bubble" />
+</div>
+
+<div class="bubble" style="z-index: 1">
+  <img src="img/aether-nobackground.png" alt="Floating Bubble" />
+</div>
+<div class="bubble" style="z-index: 1">
+  <img src="img/aether-nobackground.png" alt="Floating Bubble" />
+</div>
+<div class="bubble" style="z-index: 1">
+  <img src="img/aether-nobackground.png" alt="Floating Bubble" />
+</div>
+<div class="bubble" style="z-index: 1">
+  <img src="img/aether-nobackground.png" alt="Floating Bubble" />
+</div>
+</body>
+</html>

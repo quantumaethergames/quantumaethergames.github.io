@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="deploy-github-pages-main">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/deploy-github-pages-main.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

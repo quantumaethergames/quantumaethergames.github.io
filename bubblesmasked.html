@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bubble Mask Website</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #0e0e0e;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .background-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb') no-repeat center center;
+      background-size: cover;
+      z-index: 0;
+    }
+
+    .masked-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://media.bio.site/sites/77425db7-08bf-4649-ba3c-218485dab9c9/rgHLxtfoEiNS5qwvkqbdFj.png') no-repeat center center;
+      background-size: cover;
+      -webkit-mask-image: none;
+      mask-image: none;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .mask-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .bubble {
+      position: absolute;
+      background: black;
+      pointer-events: auto;
+      border-radius: 50%;
+      filter: url(#irregularMask);
+      transition: transform 0.3s ease;
+      will-change: transform;
+    }
+
+    .bubble:hover {
+      transform: scale(1.2) rotate(10deg);
+      filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2)) url(#irregularMask);
+    }
+
+    .main-bubble {
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      overflow: hidden;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      animation: float 6s ease-in-out infinite;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .main-bubble img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+      50% { transform: translate(-50%, -50%) translateY(-20px); }
+    }
+  </style>
+</head>
+<body>
+<svg width="0" height="0">
+  <filter id="irregularMask">
+    <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" result="turbulence" />
+    <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+</svg>
+
+<div class="background-image"></div>
+<div class="masked-image"></div>
+<div class="mask-layer" id="mask-layer"></div>
+<div class="main-bubble" id="main-bubble">
+  <img src="https://placekitten.com/400/400" alt="Main Bubble" />
+</div>
+
+<script>
+  const maskLayer = document.getElementById('mask-layer');
+  const maskedImage = document.querySelector('.masked-image');
+  const mainBubble = document.getElementById('main-bubble');
+  const bubbles = [];
+
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+
+  for (let i = 0; i < 8; i++) {
+    const bubble = document.createElement('div');
+    bubble.classList.add('bubble');
+
+    const size = 80 + Math.random() * 120;
+    bubble.style.width = `${size}px`;
+    bubble.style.height = `${size}px`;
+
+    maskLayer.appendChild(bubble);
+
+    bubbles.push({
+      el: bubble,
+      size: size,
+      baseRadius: 100 + Math.random() * 250,
+      angle: Math.random() * 360,
+      wobbleOffset: Math.random() * 100,
+      rotateSpeed: 0.3 + Math.random() * 0.3
+    });
+  }
+
+  let time = 0;
+  function animate() {
+    time += 0.01;
+    const svgNS = "http://www.w3.org/2000/svg";
+    let maskSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${window.innerWidth}" height="${window.innerHeight}"><mask id="bubbleMask">`;
+
+    bubbles.forEach((b, i) => {
+      const wobble = Math.sin(time * 2 + b.wobbleOffset) * 10;
+      const radius = b.baseRadius + wobble;
+      b.angle += 0.002 + i * 0.0005;
+
+      const x = centerX + Math.cos(b.angle) * radius;
+      const y = centerY + Math.sin(b.angle) * radius;
+
+      b.el.style.left = `${x - b.size / 2}px`;
+      b.el.style.top = `${y - b.size / 2}px`;
+      b.el.style.transform = `rotate(${time * b.rotateSpeed}rad)`;
+
+      const cx = x;
+      const cy = y;
+      const r = b.size / 2;
+      maskSVG += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="white" />`;
+    });
+
+    maskSVG += `</mask></svg>`;
+
+    maskedImage.style.webkitMaskImage = `url("data:image/svg+xml;utf8,${maskSVG}")`;
+    maskedImage.style.maskImage = `url("data:image/svg+xml;utf8,${maskSVG}")`;
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+</script>
+
+
+
+
+<body classname="" style="overflow: auto;" class="" data-react-helmet="class">
+<div id="root"><a class="skip-link" href="#main">
+  <div id="app"
+       style="--biositeColorProfile-background:#251037;--biositeColorProfile-backgroundSolid:#251037;--biositeColorProfile-backgroundSolidHeader:#251037;--biositeColorProfile-text:#77A0FA;--biositeColorProfile-textDim:rgba(119, 160, 250, 0.5);--biositeColorProfile-textOverlay:#00000040;--biositeColorProfile-buttonBackground:#FFFFFF33;--biositeColorProfile-buttonBackgroundSolid:#51405f;--biositeColorProfile-buttonText:#010101;--biositeColorProfile-buttonTextDim:rgba(1, 1, 1, 0.5);--biositeColorProfile-buttonTextText:#FFFFFF;--biositeColorProfile-linkThumbnailText:#010101;--biositeColorProfile-linkThumbnailBackground:#FFFFFF80;--biositeColorProfile-backgroundHover:#FFFFFF20;--biositeColorProfile-watermarkBackground:#FFFFFF33">
+    <div id="main" class="">
+      <div class="main-content">
+        <header data-cy="creative-03-rendered"
+                class="header BioSite-components-Header-Header__creative-03--Zfevr BioSite-components-Header-Header__hasCoverPhoto--j54ov BioSite-components-Header-Header__hasProfilePhoto--mCGoW BioSite-components-Header-Header__hasBio--z4jrx">
+          <div class="BioSite-components-Header-Header__coverWrapper--MF92H BioSite-components-Header-Header__bg--DyO_b">
+            <svg height="0" width="0" id="ewOkBdp2Geu1" viewBox="0 0 450 400"
+                 shape-rendering="geometricPrecision" color-interpolation-filters="sRGB">
+              <defs>
+                <clipPath id="34082d51-8117-4c12-961c-c56a1ad8fd82-creative-03-bg-mask"
+                          class="BioSite-components-Header-Header__bgMask--pe8zQ">
+                  <path id="ewOkBdp2Geu2"
+                        d="M192.4,60.7c8.4,8.7,5,24.7-5.5,30.7-2.5,1.4-5.2,2.2-8.4,2.2-9.7,0-15.5-14.2-15.5-23s10.8-14,20.5-14c3.5,0,6.5,1.6,8.9,4.1Z"
+                        transform="matrix(-0.717251 0.696815 -0.696815 -0.717251 335.225458 -7.808242)"></path>
+                  <path id="ewOkBdp2Geu3"
+                        d="M373.4,290.7c8.4,8.7,5,24.7-5.5,30.7-2.5,1.4-5.2,2.2-8.4,2.2-9.7,0-15.5-14.2-15.5-23s10.8-14,20.5-14c3.5,0,6.5,1.6,8.9,4.1Z"
+                        transform="matrix(-0.717251 -0.696815 0.696815 -0.717251 386.400675 702.028468)"></path>
+                  <path id="ewOkBdp2Geu4"
+                        d="M356.3,260.6c-34.7,0-59.3-43.1-59.3-76.7s71.5-59.3,106.3-59.3s34.7,64.8,34.7,98.4-47,37.6-81.7,37.6Z"
+                        transform="matrix(-0.717251 0.696815 -0.696815 -0.717251 765.850045 51.520855)"></path>
+                  <ellipse id="ewOkBdp2Geu5" rx="99.9" ry="88.8"
+                           transform="matrix(-0.354235 0.935148 -0.935148 -0.354235 104.529053 271.797024)"></ellipse>
+                  <path id="ewOkBdp2Geu6"
+                        d="M387.4,71.7c8.4,8.7,5,24.7-5.5,30.7-2.5,1.4-5.2,2.2-8.4,2.2-9.7,0-15.5-14.2-15.5-23s10.8-14,20.5-14c3.5,0,6.5,1.6,8.9,4.1Z"
+                        transform="matrix(-0.717251 0.696815 -0.696815 -0.717251 715.99183 -93.770065)"></path>
+                  <path id="ewOkBdp2Geu7"
+                        d="M54.4,153.7c8.4,8.7,5,24.7-5.5,30.7-2.5,1.4-5.2,2.2-8.4,2.2-9.7,0-15.5-14.2-15.5-23s10.8-14,20.5-14c3.5,0,6.5,1.6,8.9,4.1Z"
+                        transform="matrix(-0.717251 0.696815 -0.696815 -0.717251 292.482468 286.92305)"></path>
+                  <path id="ewOkBdp2Geu8"
+                        d="M57.4,34.7c8.4,8.7,5,24.7-5.5,30.7-2.5,1.4-5.2,2.2-8.4,2.2-9.7,0-15.5-14.2-15.5-23s10.8-14,20.5-14c3.5,0,6.5,1.6,8.9,4.1Z"
+                        transform="matrix(-0.717251 -0.696815 0.696815 -0.717251 116.591243 111.308016)"></path>
+                  <path id="ewOkBdp2Geu9"
+                        d="M318.4,34.7c8.4,8.7,5,24.7-5.5,30.7-2.5,1.4-5.2,2.2-8.4,2.2-9.7,0-15.5-14.2-15.5-23s10.8-14,20.5-14c3.5,0,6.5,1.6,8.9,4.1Z"
+                        transform="matrix(-0.717251 0.696815 -0.696815 -0.717251 643.98599 -114.41765)"></path>
+                </clipPath>
+              </defs>
+            </svg>
+            <img alt=""
+                 src="https://media.bio.site/sites/77425db7-08bf-4649-ba3c-218485dab9c9/rgHLxtfoEiNS5qwvkqbdFj.png"
+                 class="BioSite-components-Header-Header__cover--NQfMJ"
+                 style="clip-path:url(#34082d51-8117-4c12-961c-c56a1ad8fd82-creative-03-bg-mask)"></div>
+
+          <div class="BioSite-components-Header-Header__coverWrapper--MF92H BioSite-components-Header-Header__fg--K4Pw4">
+            <svg height="0" width="0" id="etCfsjd76YN1" viewBox="0 0 450 400"
+                 shape-rendering="geometricPrecision">
+              <clipPath id="34082d51-8117-4c12-961c-c56a1ad8fd82-creative-03-fg-mask"
+                        class="BioSite-components-Header-Header__fgMask--OEdgo">
+                <path id="etCfsjd76YN2"
+                      d="M299.3,48.6c7.8,14.1,1.5,31-10.5,41.7-15,13.4-33.2,23.1-58.5,23.1-35.7,0-57.3-36.4-57.3-59.1s40-35.9,75.7-35.9c24,0,41.6,14.1,50.6,30.2Z"
+                      transform="matrix(-0.717251 0.696815 -0.696815 -0.717251 535.082941 -39.531713)"></path>
+                <path id="etCfsjd76YN3"
+                      d="M320.4,339.5c8.2-9.1,22.6-9.6,32.8-2.9c4.7,3.1,8.3,7.3,10,13.2c3.4,12.1-12.2,24.4-23.3,27.5-11,3.1-21.3-8.7-24.7-20.9-1.7-6,.8-12.1,5.2-16.9Z"
+                      transform="matrix(-0.717251 0.696815 -0.696815 -0.717251 759.831488 356.238417)"></path>
+                <path id="etCfsjd76YN4"
+                      d="M150.4,122.4c0,17.5-21.6,29.9-38.3,29.9-16.8,0-29.7-36-29.7-53.5s32.4-17.5,49.2-17.5s18.8,23.6,18.8,41.1Z"
+                      transform="matrix(-0.717251 0.696815 -0.696815 -0.717251 381.195802 79.21323)"></path>
+              </clipPath>
+            </svg>
+            <img alt=""
+                 src="https://media.bio.site/sites/77425db7-08bf-4649-ba3c-218485dab9c9/rgHLxtfoEiNS5qwvkqbdFj.png"
+                 class="BioSite-components-Header-Header__cover--NQfMJ BioSite-components-Header-Header__fg--K4Pw4"
+                 style="clip-path:url(#34082d51-8117-4c12-961c-c56a1ad8fd82-creative-03-fg-mask)"></div>
+      </div>
+    </div>
+  </div></section>
+
+</div></div></div>
+<script defer="defer" src="https://media.bio.site/biosite/runtime-biosite.js"></script>
+<script defer="defer" src="https://media.bio.site/biosite/biosite.bundle.js"></script>
+<script>
+  window.initial_state = {
+    "body": [{
+      "id": "17787804-abb4-43a4-912b-2481f033845d",
+      "type": "section_social",
+      "version": 1,
+      "section": {
+        "handles": [{
+          "id": "b83133d8-4df9-4177-be03-8e7ea5d1251a",
+          "type": "linkedin",
+          "value": "https:\u002F\u002Fwww.linkedin.com\u002Fin\u002Fconnortwall\u002F",
+          "url": "https:\u002F\u002Fwww.linkedin.com\u002Fin\u002Fconnortwall\u002F"
+        }, {
+          "id": "254b616b-26eb-4c7d-bcb0-c67ba4888b6d",
+          "type": "instagram",
+          "value": "quantum.connor",
+          "url": "https:\u002F\u002Fwww.instagram.com\u002Fquantum.connor"
+        }, {
+          "id": "2c2f9250-e533-4aaa-83b3-e596d7c14f8a",
+          "type": "youtube",
+          "value": "https:\u002F\u002Fwww.youtube.com\u002F@QuantumAetherGames",
+          "url": "https:\u002F\u002Fwww.youtube.com\u002F@QuantumAetherGames"
+        }, {
+          "id": "359c3436-3fc8-49b8-90e0-b356ceb40984",
+          "type": "email",
+          "value": "connorwall2000@gmail.com",
+          "url": "mailto:connorwall2000@gmail.com"
+        }]
+      }
+    }, {
+      "id": "85626029-eaad-42c8-a3eb-e650b276094b",
+      "type": "section_links",
+      "version": 1,
+      "section": {
+        "layout_id": "cards-04",
+        "links": []
+      }
+    }, {
+      "id": "26c380c1-63db-42ac-ba4e-d4dbaa004646",
+      "type": "section_text_box",
+      "version": 1,
+      "section": {}
+    }, {
+      "id": "8d4fee9f-dde1-4aa8-841a-c0b1bf15d653",
+      "type": "section_linked_social_grid",
+      "version": 1,
+      "section": {
+        "social": "instagram",
+        "social_account_id": "7727632783958031",
+        "links": []
+      }
+    }],
+    "footer": {},
+    "header": {},
+    "metadata": {},
+    "commerce": {},
+    "id": "77425db7-08bf-4649-ba3c-218485dab9c9",
+    "theme": {
+      "background": {"type": "solid", "color": "#251037"},
+      "primary_font": {"id": "comfortaa"},
+      "secondary_font": {"id": "comfortaa"},
+      "template": {"id": "0", "default_link_layout_id": "buttons-06"},
+      "header_layout": {"id": "creative-03"},
+      "id": "custom",
+      "category": "custom",
+      "text": {"type": "solid", "color": "#77A0FA"},
+      "button_text": {"type": "solid", "color": "#010101"},
+      "button_background": {"type": "solid", "color": "#FFFFFF33"}
+    },
+    "background": "#251037",
+    "background_theme": {"type": "solid", "axis": "vertical", "colors": [{"position": 0, "value": "#251037"}]},
+    "pixel_tracking": {}
+  };
+  window.additionalRenderingContext = {
+    "fontPacksManifest": [{
+      "name": "Roboto",
+      "primary": {
+        "id": "roboto",
+        "name": "Roboto",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Froboto.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "roboto",
+        "name": "Roboto",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Froboto.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["FREE", "PLUS", "PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Playfair",
+      "primary": {
+        "id": "playfair",
+        "name": "Playfair",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fplayfair.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "playfair",
+        "name": "Playfair",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fplayfair.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["FREE", "PLUS", "PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Lato",
+      "primary": {
+        "id": "lato",
+        "name": "Lato",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Flato.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "lato",
+        "name": "Lato",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Flato.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["FREE", "PLUS", "PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Playfair Black",
+      "primary": {
+        "id": "playfair-black",
+        "name": "Playfair Black",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fplayfair-black.ttf",
+        "weight": 900,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "playfair",
+        "name": "Playfair",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fplayfair.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Bebas",
+      "primary": {
+        "id": "bebas",
+        "name": "BEBAS",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fbebas.ttf",
+        "weight": 400,
+        "scale": 1.2
+      },
+      "secondary": {
+        "id": "bebas",
+        "name": "BEBAS",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fbebas.ttf",
+        "weight": 400,
+        "scale": 1.2
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Open Sans",
+      "primary": {
+        "id": "open-sans",
+        "name": "Open Sans",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fopen-sans.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "open-sans",
+        "name": "Open Sans",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fopen-sans.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Cinzel",
+      "primary": {
+        "id": "cinzel",
+        "name": "CINZEL",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fcinzel.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "cinzel",
+        "name": "CINZEL",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fcinzel.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Space Mono",
+      "primary": {
+        "id": "space-mono",
+        "name": "Space Mono",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fspace-mono.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "space-mono",
+        "name": "Space Mono",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fspace-mono.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Comfortaa",
+      "primary": {
+        "id": "comfortaa",
+        "name": "Comfortaa",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fcomfortaa.ttf",
+        "weight": 700,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "comfortaa",
+        "name": "Comfortaa",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fcomfortaa.ttf",
+        "weight": 700,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Playfair Pack",
+      "primary": {
+        "id": "playfair",
+        "name": "Playfair",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fplayfair.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "roboto",
+        "name": "Roboto",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Froboto.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Cinzel Pack",
+      "primary": {
+        "id": "cinzel",
+        "name": "CINZEL",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fcinzel.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "roboto",
+        "name": "Roboto",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Froboto.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Bebas Pack",
+      "primary": {
+        "id": "bebas",
+        "name": "BEBAS",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fbebas.ttf",
+        "weight": 400,
+        "scale": 1.2
+      },
+      "secondary": {
+        "id": "roboto",
+        "name": "Roboto",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Froboto.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Slab",
+      "primary": {
+        "id": "roboto-slab",
+        "name": "Roboto Slab",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Froboto-slab.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "roboto-slab",
+        "name": "Roboto Slab",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Froboto-slab.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Alegreya",
+      "primary": {
+        "id": "alegreya",
+        "name": "Alegreya",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Falegreya.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "alegreya-sans",
+        "name": "Alegreya Sans",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Falegreya-sans.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Oswald",
+      "primary": {
+        "id": "oswald",
+        "name": "Oswald",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Foswald.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "source-serif-4",
+        "name": "Source Serif 4",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fsource-serif-4.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }, {
+      "name": "Barlow",
+      "primary": {
+        "id": "barlow-condensed",
+        "name": "Barlow Condensed",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fbarlow-condensed.ttf",
+        "weight": 500,
+        "scale": 1
+      },
+      "secondary": {
+        "id": "montserrat",
+        "name": "Montserrat",
+        "url": "https:\u002F\u002Fmedia.bio.site\u002Fpublic\u002Flibrary\u002Ffonts\u002Fmontserrat.ttf",
+        "weight": 400,
+        "scale": 1
+      },
+      "availability": ["PRO", "BIO_SITES_PRO"]
+    }], "locale": "en-US"
+  };
+</script>
+</body>
+</body>
+</html>

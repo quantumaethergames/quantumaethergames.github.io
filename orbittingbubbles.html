@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Bubble Mask Website</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: #0e0e0e;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb') no-repeat center center;
+            background-size: cover;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .masked-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://media.bio.site/sites/77425db7-08bf-4649-ba3c-218485dab9c9/rgHLxtfoEiNS5qwvkqbdFj.png') no-repeat center center;
+            background-size: cover;
+            mask-image: url('#bubbleMask'); /* Will use the bubble mask */
+            -webkit-mask-image: url('#bubbleMask');
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .mask-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            background: black;
+            pointer-events: auto;
+            border-radius: 50%;
+            filter: url(https://media.bio.site/sites/77425db7-08bf-4649-ba3c-218485dab9c9/rgHLxtfoEiNS5qwvkqbdFj.png);
+            transition: transform 0.3s ease;
+            will-change: transform;
+        }
+
+        .bubble:hover {
+            transform: scale(1.2) rotate(10deg);
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2)) url(#irregularMask);
+        }
+
+        .main-bubble {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            animation: float 6s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .main-bubble img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(-50%, -50%) translateY(0px);
+            }
+            50% {
+                transform: translate(-50%, -50%) translateY(-20px);
+            }
+        }
+    </style>
+</head>
+<body>
+<svg width="0" height="0">
+    <filter id="irregularMask">
+        <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" result="turbulence"/>
+        <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+
+    <mask id="bubbleMask">
+        <rect width="100%" height="100%" fill="black"/>
+        <!-- Will dynamically add circles here -->
+    </mask>
+</svg>
+
+<svg height="0" width="0" id="etCfsjd76YN1" viewBox="0 0 450 400"
+     shape-rendering="geometricPrecision">
+    <clipPath id="34082d51-8117-4c12-961c-c56a1ad8fd82-creative-03-fg-mask"
+              class="BioSite-components-Header-Header__fgMask--OEdgo">
+        <path id="etCfsjd76YN2"
+              d="M299.3,48.6c7.8,14.1,1.5,31-10.5,41.7-15,13.4-33.2,23.1-58.5,23.1-35.7,0-57.3-36.4-57.3-59.1s40-35.9,75.7-35.9c24,0,41.6,14.1,50.6,30.2Z"
+              transform="matrix(-0.717251 0.696815 -0.696815 -0.717251 535.082941 -39.531713)"></path>
+        <path id="etCfsjd76YN3"
+              d="M320.4,339.5c8.2-9.1,22.6-9.6,32.8-2.9c4.7,3.1,8.3,7.3,10,13.2c3.4,12.1-12.2,24.4-23.3,27.5-11,3.1-21.3-8.7-24.7-20.9-1.7-6,.8-12.1,5.2-16.9Z"
+              transform="matrix(-0.717251 0.696815 -0.696815 -0.717251 759.831488 356.238417)"></path>
+        <path id="etCfsjd76YN4"
+              d="M150.4,122.4c0,17.5-21.6,29.9-38.3,29.9-16.8,0-29.7-36-29.7-53.5s32.4-17.5,49.2-17.5s18.8,23.6,18.8,41.1Z"
+              transform="matrix(-0.717251 0.696815 -0.696815 -0.717251 381.195802 79.21323)"></path>
+    </clipPath>
+</svg>
+
+<div class="background-image"></div>
+
+<div class="masked-image"></div>
+
+<div class="mask-layer" id="mask-layer"></div>
+
+<div class="main-bubble" id="main-bubble">
+    <img src="img/aether-nobackground.png" alt="Main Bubble"/>
+</div>
+
+<script>
+    const maskLayer = document.getElementById('mask-layer');
+    const maskedImage = document.querySelector('.masked-image');
+    const bubbles = [];
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+
+    // Create the bubbles and the dynamic mask
+    for (let i = 0; i < 8; i++) {
+        const bubble = document.createElement('div');
+        bubble.classList.add('bubble');
+
+        const size = 80 + Math.random() * 120;
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+
+        maskLayer.appendChild(bubble);
+
+        bubbles.push({
+            el: bubble,
+            size: size,
+            baseRadius: 100 + Math.random() * 250,
+            angle: Math.random() * 360,
+            wobbleOffset: Math.random() * 100,
+            rotateSpeed: 0.3 + Math.random() * 0.3
+        });
+    }
+
+    let time = 0;
+    function animate() {
+        time += 0.01;
+
+        let maskSVG = `<svg xmlns='http://www.w3.org/2000/svg' width='${window.innerWidth}' height='${window.innerHeight}'><mask id='bubbleMask'><rect width='100%' height='100%' fill='black' />`;
+
+        bubbles.forEach((b, i) => {
+            const wobble = Math.sin(time * 2 + b.wobbleOffset) * 10;
+            const radius = b.baseRadius + wobble;
+            b.angle += 0.002 + i * 0.0005; // slower
+
+            const x = centerX + Math.cos(b.angle) * radius;
+            const y = centerY + Math.sin(b.angle) * radius;
+
+            // Update mask with bubbles
+            const cx = x;
+            const cy = y;
+            const r = b.size / 2;
+            maskSVG += `<circle cx='${cx}' cy='${cy}' r='${r}' fill='white' />`;
+
+            // Update bubble position
+            b.el.style.left = `${x - b.size / 2}px`;
+            b.el.style.top = `${y - b.size / 2}px`;
+            b.el.style.transform = `rotate(${time * b.rotateSpeed}rad)`;
+        });
+
+        maskSVG += `</mask><rect width='100%' height='100%' fill='white' mask='url(#bubbleMask)' /></svg>`;
+
+        const svgURL = `data:image/svg+xml;utf8,${encodeURIComponent(maskSVG)}`;
+        maskedImage.style.webkitMaskImage = `url(${svgURL})`;
+        maskedImage.style.maskImage = `url(${svgURL})`;
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+
+</body>
+</html>
