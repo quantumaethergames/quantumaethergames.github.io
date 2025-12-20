@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import '../styles/globals.css'  // or App.css
 
 export const metadata: Metadata = {
-  title: 'Next.js on GitHub Pages',
-  description: 'Deploy your static Next.js site to GitHub Pages.',
+  title: 'Quantum Aether Games',
+  description: 'Crafting digital worlds that are driven by the natural world.',
 };
 
 export default function RootLayout({
@@ -12,7 +13,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+    <body style={{margin: 0, padding: 0, backgroundColor: '#0f172a'}}>
+    {children}
+    </body>
     </html>
   );
 }

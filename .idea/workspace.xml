@@ -4,11 +4,34 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="33025e1e-293d-4b37-b7bd-8d8341e53cb6" name="Changes" comment="updated to next.js typescript template" />
+    <list default="true" id="33025e1e-293d-4b37-b7bd-8d8341e53cb6" name="Changes" comment="updated description">
+      <change afterPath="$PROJECT_DIR$/app/game/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/OmnivoresRuleWebGame.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/postcss.config.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/styles/globals.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tailwind.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/VideoBackgroundSection.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/VideoBackgroundSection.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/styles/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/styles/App.css" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="CSS File" />
+        <option value="JavaScript File" />
+        <option value="TypeScript JSX File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -22,26 +45,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Node.js.next.config.ts.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "A:/Korra/iCloudDrive/Documents/Professional/Personal Branding",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_interpreter_path": "node",
-    "nodejs_package_manager_path": "A:\\Program Files\\nodejs\\npm.cmd",
-    "npm.build.executor": "Run",
-    "npm.dev.executor": "Run",
-    "settings.editor.selected.configurable": "settings.nodejs",
-    "ts.external.directory.path": "A:\\Korra\\iCloudDrive\\Documents\\Professional\\Personal Branding\\QuantumAetherGames\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Node.js.next.config.ts.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;A:/Korra/iCloudDrive/Documents/Professional/Personal Branding/QuantumAetherGames/app&quot;,
+    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_interpreter_path&quot;: &quot;node&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;A:\\Program Files\\nodejs\\npm.cmd&quot;,
+    &quot;npm.build.executor&quot;: &quot;Run&quot;,
+    &quot;npm.dev.executor&quot;: &quot;Run&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;A:\\Korra\\iCloudDrive\\Documents\\Professional\\Personal Branding\\QuantumAetherGames\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="A:\Korra\iCloudDrive\Documents\Professional\Personal Branding\QuantumAetherGames\app" />
+      <recent name="A:\Korra\iCloudDrive\Documents\Professional\Personal Branding\QuantumAetherGames" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="A:\Korra\iCloudDrive\Documents\Professional\Personal Branding\QuantumAetherGames\components" />
+    </key>
+  </component>
   <component name="RunManager" selected="npm.dev">
     <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
@@ -87,7 +120,13 @@
       <option name="presentableId" value="Default" />
       <updated>1766215983850</updated>
       <workItem from="1766215985388" duration="2079000" />
-      <workItem from="1766224645400" duration="2156000" />
+      <workItem from="1766224645400" duration="11707000" />
+      <workItem from="1766300825453" duration="1699000" />
+      <workItem from="1766352674804" duration="267000" />
+      <workItem from="1766352952381" duration="306000" />
+      <workItem from="1766353275757" duration="2090000" />
+      <workItem from="1766377845608" duration="3741000" />
+      <workItem from="1766385002466" duration="6916000" />
     </task>
     <task id="LOCAL-00001" summary="updated to next.js typescript template">
       <option name="closed" value="true" />
@@ -97,14 +136,56 @@
       <option name="project" value="LOCAL" />
       <updated>1766229271417</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="initial site commit">
+      <option name="closed" value="true" />
+      <created>1766229788830</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1766229788830</updated>
+    </task>
+    <task id="LOCAL-00003" summary="removed zip">
+      <option name="closed" value="true" />
+      <created>1766272126948</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1766272126948</updated>
+    </task>
+    <task id="LOCAL-00004" summary="updated description">
+      <option name="closed" value="true" />
+      <created>1766272746881</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1766272746881</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="updated to next.js typescript template" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated to next.js typescript template" />
+    <MESSAGE value="initial site commit" />
+    <MESSAGE value="removed zip" />
+    <MESSAGE value="updated description" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated description" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
