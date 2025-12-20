@@ -1,7 +1,10 @@
+import '../styles/App.css';
+import VideoBackgroundSection from '../components/VideoBackgroundSection';
+
 export default function Home() {
   return (
     <main>
-      <div>Next.js on GitHub Pages</div>
+      <div><VideoBackgroundSection/></div>
     </main>
   );
 }
