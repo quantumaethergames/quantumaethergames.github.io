@@ -10,7 +10,7 @@ export default function VideoBackgroundSection() {
     const [error, setError] = useState('');
     const router = useRouter();
 
-    const handlePasswordSubmit = (e) => {
+    const handlePasswordSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (password === '0mnivore') {
             router.push('/game');

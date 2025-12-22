@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="33025e1e-293d-4b37-b7bd-8d8341e53cb6" name="Changes" comment="updated description">
+    <list default="true" id="33025e1e-293d-4b37-b7bd-8d8341e53cb6" name="Changes" comment="updated lockfile yaml">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pnpm-lock.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/VideoBackgroundSection.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/VideoBackgroundSection.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -115,7 +115,7 @@
       <workItem from="1766352952381" duration="306000" />
       <workItem from="1766353275757" duration="2090000" />
       <workItem from="1766377845608" duration="3741000" />
-      <workItem from="1766385002466" duration="7979000" />
+      <workItem from="1766385002466" duration="8810000" />
     </task>
     <task id="LOCAL-00001" summary="updated to next.js typescript template">
       <option name="closed" value="true" />
@@ -157,7 +157,15 @@
       <option name="project" value="LOCAL" />
       <updated>1766396635408</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="updated lockfile yaml">
+      <option name="closed" value="true" />
+      <created>1766440347844</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1766440347844</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -180,7 +188,8 @@
     <MESSAGE value="removed zip" />
     <MESSAGE value="adding demo draft to page" />
     <MESSAGE value="updated description" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated description" />
+    <MESSAGE value="updated lockfile yaml" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated lockfile yaml" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
