@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="33025e1e-293d-4b37-b7bd-8d8341e53cb6" name="Changes" comment="updated lockfile yaml">
+    <list default="true" id="33025e1e-293d-4b37-b7bd-8d8341e53cb6" name="Changes" comment="updated e exception">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/VideoBackgroundSection.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/VideoBackgroundSection.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/OmnivoresRuleWebGame.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/OmnivoresRuleWebGame.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -115,7 +115,8 @@
       <workItem from="1766352952381" duration="306000" />
       <workItem from="1766353275757" duration="2090000" />
       <workItem from="1766377845608" duration="3741000" />
-      <workItem from="1766385002466" duration="8810000" />
+      <workItem from="1766385002466" duration="11182000" />
+      <workItem from="1766488719358" duration="20948000" />
     </task>
     <task id="LOCAL-00001" summary="updated to next.js typescript template">
       <option name="closed" value="true" />
@@ -165,7 +166,15 @@
       <option name="project" value="LOCAL" />
       <updated>1766440347844</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="updated e exception">
+      <option name="closed" value="true" />
+      <created>1766440714061</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1766440714061</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -189,7 +198,8 @@
     <MESSAGE value="adding demo draft to page" />
     <MESSAGE value="updated description" />
     <MESSAGE value="updated lockfile yaml" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated lockfile yaml" />
+    <MESSAGE value="updated e exception" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated e exception" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
