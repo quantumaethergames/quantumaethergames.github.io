@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Book, Volume2, Radio, Zap, ChevronRight, Home, X } from 'lucide-react';
 
 // Sound generation functions
@@ -720,6 +720,518 @@ const GAME_DATA = {
   },
   startLocation: "station"
 };
+
+// 3D Planet Component
+function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
+  const [rotation, setRotation] = useState({ x: -20, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [autoRotate, setAutoRotate] = useState(true);
+
+  // Auto-rotation (slower speed)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (autoRotate && !isDragging) {
+        setRotation(prev => ({ ...prev, y: prev.y + 0.15 }));
+      }
+    }, 50);
+    return () => clearInterval(interval);
+  }, [autoRotate, isDragging]);
+
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setAutoRotate(false);
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+
+    const deltaX = e.clientX - dragStart.x;
+    const deltaY = e.clientY - dragStart.y;
+
+    // Mirrored controls - drag right = rotate right, drag down = rotate down
+    // Both axes now mirrored
+    setRotation(prev => ({
+      x: Math.max(-90, Math.min(90, prev.x + deltaY * 0.5)),
+      y: prev.y - deltaX * 0.5
+    }));
+
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseUp = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = (e) => {
+    if (isDragging) {
+      setIsDragging(false);
+    }
+  };
+
+  // Major surface locations positioned all around the sphere
+  const surfaceLocations = [
+    { key: 'station', name: 'The Station', emoji: '🏢', color: '#06b6d4', lat: 20, lon: 0 },
+    { key: 'facility', name: 'The Facility', emoji: '🧊', color: '#3b82f6', lat: -15, lon: 90 },
+    { key: 'core', name: 'The Core', emoji: '⚫', color: '#a855f7', lat: 25, lon: 180 },
+    { key: 'gardens', name: 'The Gardens', emoji: '🌿', color: '#22c55e', lat: -20, lon: 270 }
+  ];
+
+  // Sublocation positions relative to their parent (offset angles)
+  const sublocationOffsets = {
+    // Station sublocations
+    'control_room': { latOffset: 10, lonOffset: -15 },
+    'observation_deck': { latOffset: -8, lonOffset: 12 },
+    'hidden_archive': { latOffset: 5, lonOffset: 18 },
+
+    // Facility sublocations
+    'cryo_bay': { latOffset: -12, lonOffset: -10 },
+    'medical_wing': { latOffset: 8, lonOffset: 15 },
+    'quarantine_zone': { latOffset: -5, lonOffset: -20 },
+
+    // Core sublocations
+    'containment_field': { latOffset: 12, lonOffset: 10 },
+    'reactor_level': { latOffset: -10, lonOffset: -12 },
+    'temporal_lab': { latOffset: 6, lonOffset: 20 },
+
+    // Gardens sublocations
+    'green_grass': { latOffset: -15, lonOffset: 8 },
+    'blue_river': { latOffset: 10, lonOffset: -15 },
+    'synthesis_grove': { latOffset: -8, lonOffset: 18 }
+  };
+
+  // Get all visible locations (major + discovered sublocations)
+  const getVisibleLocations = () => {
+    const visible = [...surfaceLocations];
+
+    // Check each major location's sublocations
+    surfaceLocations.forEach(majorLoc => {
+      const majorLocData = GAME_DATA.locations[majorLoc.key];
+
+      if (majorLocData.subLocations) {
+        majorLocData.subLocations.forEach(subLocKey => {
+          const subLoc = GAME_DATA.locations[subLocKey];
+
+          // Check if sublocation should be visible
+          let isRevealed = true;
+
+          if (subLoc.initiallyHidden) {
+            isRevealed = discoveredClues.includes(`REVEALED_${subLocKey}`);
+          }
+
+          if (subLoc.revealedBy) {
+            isRevealed = discoveredClues.includes(subLoc.revealedBy);
+          }
+
+          // Add sublocation if revealed
+          if (isRevealed && sublocationOffsets[subLocKey]) {
+            const offset = sublocationOffsets[subLocKey];
+            visible.push({
+              key: subLocKey,
+              name: subLoc.name,
+              emoji: subLoc.image,
+              color: majorLoc.color, // Use parent's color
+              lat: majorLoc.lat + offset.latOffset,
+              lon: majorLoc.lon + offset.lonOffset,
+              isSublocation: true,
+              parent: majorLoc.key
+            });
+          }
+        });
+      }
+    });
+
+    return visible;
+  };
+
+  const allLocations = getVisibleLocations();
+
+  // Convert lat/lon to 3D position with rotation applied
+  const getPosition = (lat, lon, radius = 115) => {
+    // Apply Y rotation first
+    const rotatedLon = lon + rotation.y;
+
+    // Convert to radians
+    const phi = (90 - lat) * (Math.PI / 180);
+    const theta = rotatedLon * (Math.PI / 180);
+
+    // Calculate base position
+    let x = radius * Math.sin(phi) * Math.cos(theta);
+    let y = radius * Math.cos(phi);
+    let z = radius * Math.sin(phi) * Math.sin(theta);
+
+    // Apply X rotation
+    const rotX = rotation.x * (Math.PI / 180);
+    const newY = y * Math.cos(rotX) - z * Math.sin(rotX);
+    const newZ = y * Math.sin(rotX) + z * Math.cos(rotX);
+
+    return {
+      x: x,
+      y: -newY,
+      z: newZ
+    };
+  };
+
+  // Generate latitude lines
+  const generateLatitudeLines = () => {
+    const lines = [];
+    for (let lat = -60; lat <= 60; lat += 30) {
+      const points = [];
+      for (let lon = 0; lon <= 360; lon += 10) {
+        const pos = getPosition(lat, lon - rotation.y, 128);
+        points.push({ ...pos, lon });
+      }
+      lines.push({ lat, points });
+    }
+    return lines;
+  };
+
+  // Generate longitude lines
+  const generateLongitudeLines = () => {
+    const lines = [];
+    for (let lon = 0; lon < 360; lon += 30) {
+      const points = [];
+      for (let lat = -90; lat <= 90; lat += 5) {
+        const pos = getPosition(lat, lon - rotation.y, 128);
+        points.push({ ...pos, lat });
+      }
+      lines.push({ lon, points });
+    }
+    return lines;
+  };
+
+  const latLines = generateLatitudeLines();
+  const lonLines = generateLongitudeLines();
+
+  // Generate random surface features (continents/regions)
+  const generateSurfaceFeatures = () => {
+    const features = [];
+    for (let i = 0; i < 20; i++) {
+      const lat = -60 + Math.random() * 120;
+      const lon = Math.random() * 360;
+      const pos = getPosition(lat, lon - rotation.y, 125);
+
+      if (pos.z > -100) {
+        features.push({
+          pos,
+          size: 15 + Math.random() * 25,
+          color: `rgba(100, 116, 139, ${0.1 + Math.random() * 0.15})`,
+          rotation: Math.random() * 360
+        });
+      }
+    }
+    return features;
+  };
+
+  const surfaceFeatures = generateSurfaceFeatures();
+
+  return (
+      <div
+          className={`relative w-full h-full flex items-center justify-center ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          style={{
+            perspective: '1200px',
+            touchAction: 'none',
+            userSelect: 'none'
+          }}
+      >
+        {/* Stars background */}
+        <div className="absolute inset-0 pointer-events-none">
+          {Array.from({ length: 60 }).map((_, i) => (
+              <div
+                  key={i}
+                  className="absolute w-1 h-1 bg-white rounded-full"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    opacity: Math.random() * 0.3 + 0.1,
+                    animation: `twinkle ${4 + Math.random() * 5}s infinite`
+                  }}
+              />
+          ))}
+        </div>
+
+        {/* 3D Planet Container */}
+        <div
+            className="relative w-64 h-64 pointer-events-none"
+            style={{
+              transformStyle: 'preserve-3d'
+            }}
+        >
+          {/* Base planet sphere with improved shading */}
+          <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: 'radial-gradient(circle at 35% 35%, #5a6a7a 0%, #475569 20%, #334155 40%, #1e293b 70%, #0f172a 100%)',
+                boxShadow: 'inset -30px -30px 100px rgba(0,0,0,0.8), inset 20px 20px 60px rgba(100,116,139,0.08), 0 0 60px rgba(6, 182, 212, 0.1)',
+              }}
+          />
+
+          {/* Additional shadow layer for better depth */}
+          <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: 'radial-gradient(circle at 32% 32%, transparent 0%, transparent 30%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.7) 100%)',
+              }}
+          />
+
+          {/* SVG for grid lines and features */}
+          <svg
+              className="absolute inset-0 w-full h-full overflow-visible pointer-events-none"
+              viewBox="0 0 256 256"
+              style={{ transformStyle: 'preserve-3d' }}
+          >
+            {/* Surface features (continents) */}
+            {surfaceFeatures.map((feature, idx) => (
+                <ellipse
+                    key={`feature-${idx}`}
+                    cx={128 + feature.pos.x}
+                    cy={128 + feature.pos.y}
+                    rx={feature.size}
+                    ry={feature.size * 0.7}
+                    fill={feature.color}
+                    opacity={Math.max(0, Math.min(0.6, (feature.pos.z + 128) / 256))}
+                    style={{
+                      filter: 'blur(6px)',
+                      transform: `rotate(${feature.rotation}deg)`,
+                      transformOrigin: `${128 + feature.pos.x}px ${128 + feature.pos.y}px`
+                    }}
+                />
+            ))}
+
+            {/* Latitude lines */}
+            {latLines.map((line, idx) => {
+              const visiblePoints = line.points.filter(p => p.z > -120);
+              if (visiblePoints.length < 2) return null;
+
+              const pathData = visiblePoints.map((p, i) =>
+                  `${i === 0 ? 'M' : 'L'} ${128 + p.x} ${128 + p.y}`
+              ).join(' ');
+
+              return (
+                  <path
+                      key={`lat-${idx}`}
+                      d={pathData}
+                      fill="none"
+                      stroke="#64748b"
+                      strokeWidth="0.5"
+                      opacity="0.25"
+                  />
+              );
+            })}
+
+            {/* Longitude lines */}
+            {lonLines.map((line, idx) => {
+              const visiblePoints = line.points.filter(p => p.z > -120);
+              if (visiblePoints.length < 2) return null;
+
+              const pathData = visiblePoints.map((p, i) =>
+                  `${i === 0 ? 'M' : 'L'} ${128 + p.x} ${128 + p.y}`
+              ).join(' ');
+
+              return (
+                  <path
+                      key={`lon-${idx}`}
+                      d={pathData}
+                      fill="none"
+                      stroke="#64748b"
+                      strokeWidth="0.5"
+                      opacity="0.2"
+                  />
+              );
+            })}
+          </svg>
+
+          {/* Atmospheric glow - repositioned for light source */}
+          <div
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle at 32% 32%, rgba(139, 180, 216, 0.08) 0%, rgba(6, 182, 212, 0.04) 30%, transparent 60%)',
+                filter: 'blur(2px)'
+              }}
+          />
+
+          {/* Outer atmospheric glow */}
+          <div
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle at 50% 50%, transparent 70%, rgba(6, 182, 212, 0.08) 85%, transparent 100%)',
+                filter: 'blur(5px)',
+                transform: 'scale(1.05)'
+              }}
+          />
+
+          {/* Location markers - major locations and discovered sublocations */}
+          {allLocations.map((loc) => {
+            const pos = getPosition(loc.lat, loc.lon, loc.isSublocation ? 125 : 132);
+            const isCurrent = currentLocation === loc.key;
+
+            // Calculate visibility based on Z position (back of sphere)
+            const isVisible = pos.z > -50;
+
+            // Calculate scale and opacity based on distance from viewer
+            const distanceFromFront = (pos.z + (loc.isSublocation ? 125 : 132)) / (loc.isSublocation ? 250 : 264);
+            const baseScale = loc.isSublocation ? 0.3 : 0.4;
+            const scale = baseScale + (distanceFromFront * (loc.isSublocation ? 0.4 : 0.6));
+            const opacity = Math.max(0.3, distanceFromFront);
+
+            if (!isVisible) return null;
+
+            return (
+                <div
+                    key={loc.key}
+                    className="absolute pointer-events-auto"
+                    style={{
+                      left: '50%',
+                      top: '50%',
+                      transform: `translate(-50%, -50%) translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
+                      opacity: opacity,
+                      zIndex: Math.round(pos.z + 200),
+                      transition: 'opacity 0.3s, transform 0.3s'
+                    }}
+                >
+                  <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isCurrent && isVisible) {
+                          onLocationClick(loc.key);
+                        }
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      className={`relative group ${isCurrent ? '' : 'cursor-pointer'}`}
+                      disabled={isCurrent || !isVisible}
+                  >
+                    {/* Glow effect for current location */}
+                    {isCurrent && (
+                        <div
+                            className="absolute inset-0 rounded-full pointer-events-none"
+                            style={{
+                              background: `radial-gradient(circle, ${loc.color}25, transparent)`,
+                              width: loc.isSublocation ? '70px' : '100px',
+                              height: loc.isSublocation ? '70px' : '100px',
+                              left: '50%',
+                              top: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              filter: 'blur(10px)',
+                              animation: 'pulse 3s ease-in-out infinite'
+                            }}
+                        />
+                    )}
+
+                    {/* Location marker */}
+                    <div
+                        className={`relative flex flex-col items-center gap-1 rounded-xl border-2 transition-all ${
+                            isCurrent
+                                ? 'bg-slate-800/95 backdrop-blur-sm'
+                                : 'bg-slate-900/85 backdrop-blur-sm hover:bg-slate-800/95 hover:scale-110'
+                        } ${loc.isSublocation ? 'p-1' : 'p-2'}`}
+                        style={{
+                          borderColor: isCurrent ? loc.color : `${loc.color}70`,
+                          boxShadow: isCurrent ? `0 0 15px ${loc.color}40` : `0 0 6px ${loc.color}25`,
+                          minWidth: loc.isSublocation ? '45px' : '65px'
+                        }}
+                    >
+                      {/* Emoji */}
+                      <div className={`${loc.isSublocation ? 'text-lg' : 'text-2xl'} pointer-events-none`} style={{
+                        filter: `drop-shadow(0 0 4px ${loc.color}80)`
+                      }}>
+                        {loc.emoji}
+                      </div>
+
+                      {/* Location name */}
+                      <div
+                          className={`${loc.isSublocation ? 'text-[7px]' : 'text-[9px]'} font-bold text-center whitespace-nowrap px-1 pointer-events-none`}
+                          style={{ color: loc.color }}
+                      >
+                        {loc.name}
+                      </div>
+
+                      {/* Current location indicator */}
+                      {isCurrent && (
+                          <div
+                              className={`absolute -top-1 -right-1 ${loc.isSublocation ? 'w-2 h-2' : 'w-3 h-3'} rounded-full border-2 border-slate-900 pointer-events-none`}
+                              style={{ backgroundColor: loc.color }}
+                          >
+                            <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: loc.color, opacity: 0.4 }} />
+                          </div>
+                      )}
+
+                      {/* Hover tooltip */}
+                      {!isCurrent && isVisible && (
+                          <div
+                              className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-800/95 rounded-lg text-[9px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-slate-600"
+                              style={{ color: loc.color }}
+                          >
+                            Click to visit
+                          </div>
+                      )}
+                    </div>
+
+                    {/* Connection beam to planet surface */}
+                    <div
+                        className="absolute bottom-full left-1/2 w-0.5 origin-bottom pointer-events-none"
+                        style={{
+                          height: loc.isSublocation ? '12px' : '18px',
+                          background: `linear-gradient(to bottom, transparent, ${loc.color}40, ${loc.color}80)`,
+                          transform: 'translateX(-50%)',
+                          boxShadow: `0 0 2px ${loc.color}60`
+                        }}
+                    />
+                  </button>
+                </div>
+            );
+          })}
+        </div>
+
+        {/* Control hints */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-3 text-[10px] text-slate-400 bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-slate-700 pointer-events-none">
+          <div className="flex items-center gap-1.5">
+            <div className="text-xs">🖱️</div>
+            <span>Drag</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="text-xs">👆</div>
+            <span>Click</span>
+          </div>
+        </div>
+
+        {/* Auto-rotate toggle */}
+        <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setAutoRotate(!autoRotate);
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="absolute top-2 right-2 p-1.5 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-lg border border-slate-600 transition-colors group pointer-events-auto z-50"
+            title={autoRotate ? "Pause rotation" : "Auto-rotate"}
+        >
+          <div className={`text-sm transition-transform ${autoRotate ? 'animate-spin' : 'group-hover:scale-110'}`} style={{ animationDuration: '8s' }}>
+            🌍
+          </div>
+        </button>
+
+        <style jsx>{`
+          @keyframes twinkle {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.4; }
+          }
+          @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+          }
+        `}</style>
+      </div>
+  );
+}
+
+
 // Component
 export default function MysteryGame() {
   const [gameState, setGameState] = useState('menu');
@@ -728,6 +1240,7 @@ export default function MysteryGame() {
   const [actionLog, setActionLog] = useState([]);
   const [showKnowledge, setShowKnowledge] = useState(false);
   const [knowledgeView, setKnowledgeView] = useState('list');
+  const [mapView, setMapView] = useState('global');
   const [showSpotDialog, setShowSpotDialog] = useState(false);
   const [selectedSpot, setSelectedSpot] = useState(null);
   const [newClueNotification, setNewClueNotification] = useState(null);
@@ -871,22 +1384,26 @@ export default function MysteryGame() {
     // Set up animation path
     setAnimatingPath({ from: currentLocation, to: locationKey });
 
-    // Wait for animation to complete
+    // Wait for animation to complete before changing location
     setTimeout(() => {
       setCurrentLocation(locationKey);
-      setAnimatingPath(null);
 
       // Mark location as visited
       if (!discoveredClues.includes(`VISITED_${locationKey}`)) {
-        setDiscoveredClues([...discoveredClues, `VISITED_${locationKey}`]);
+        setDiscoveredClues(prev => [...prev, `VISITED_${locationKey}`]);
       }
 
-      setActionLog([...actionLog, {
+      setActionLog(prev => [...prev, {
         location: toLoc.name,
         action: 'travel',
         result: `You move to ${toLoc.name}.`
       }]);
-    }, 1500); // Animation duration
+
+      // Clear animation after a brief delay to ensure smooth transition
+      setTimeout(() => {
+        setAnimatingPath(null);
+      }, 100);
+    }, 1500); // Match the animation duration
   };
 
   const startGame = () => {
@@ -1030,18 +1547,44 @@ export default function MysteryGame() {
                                   {mystery}
                                 </h3>
                                 {clues.map((clue) => (
-                                    <div key={clue.id} className="p-4 bg-slate-700/50 rounded-xl border-l-4"
-                                         style={{borderColor: clue.color}}>
-                                      <div className="text-sm font-semibold mb-2"
-                                           style={{color: clue.color}}>{clue.name}</div>
-                                      <div className="text-sm text-slate-300">{clue.description}</div>
-                                    </div>
+                                    <button
+                                        key={clue.id}
+                                        onClick={() => {
+                                          // Toggle clue details - we'll add state for this
+                                          const clueElement = document.getElementById(`clue-detail-${clue.id}`);
+                                          if (clueElement) {
+                                            clueElement.classList.toggle('hidden');
+                                          }
+                                        }}
+                                        className="w-full text-left p-4 bg-slate-700/50 hover:bg-slate-700/70 rounded-xl border-l-4 transition-all cursor-pointer"
+                                        style={{borderColor: clue.color}}
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <div className="text-sm font-semibold"
+                                             style={{color: clue.color}}>{clue.name}</div>
+                                        <ChevronRight size={16} className="text-slate-400 transition-transform" style={{
+                                          transform: 'rotate(0deg)'
+                                        }} />
+                                      </div>
+                                      <div id={`clue-detail-${clue.id}`} className="hidden mt-3 pt-3 border-t border-slate-600">
+                                        <div className="text-sm text-slate-300 mb-2">{clue.description}</div>
+                                        <div className="flex items-center gap-2 text-xs">
+                                          <div className="px-2 py-1 rounded-md" style={{
+                                            backgroundColor: `${clue.color}20`,
+                                            color: clue.color
+                                          }}>
+                                            {clue.mystery}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </button>
                                 ))}
                               </div>
                           );
                         })}
                       </div>
-                  ) : (<div className="relative w-full h-[600px] bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+                  ) : (
+                      <div className="relative w-full h-[600px] bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
                         <svg className="absolute inset-0 w-full h-full">
                           <defs>
                             <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -1099,7 +1642,33 @@ export default function MysteryGame() {
                                     const clueY = y + Math.sin(clueAngle) * 15;
 
                                     return (
-                                        <g key={clue.id}>
+                                        <g
+                                            key={clue.id}
+                                            onMouseEnter={(e) => {
+                                              // Show tooltip
+                                              const tooltip = document.getElementById('web-tooltip');
+                                              const tooltipName = document.getElementById('web-tooltip-name');
+                                              const tooltipDesc = document.getElementById('web-tooltip-desc');
+                                              const tooltipMystery = document.getElementById('web-tooltip-mystery');
+
+                                              if (tooltip && tooltipName && tooltipDesc && tooltipMystery) {
+                                                tooltipName.textContent = clue.name;
+                                                tooltipDesc.textContent = clue.description;
+                                                tooltipMystery.textContent = clue.mystery;
+                                                tooltipMystery.style.color = clue.color;
+                                                tooltip.style.borderColor = clue.color;
+                                                tooltip.classList.remove('hidden');
+                                              }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                              // Hide tooltip
+                                              const tooltip = document.getElementById('web-tooltip');
+                                              if (tooltip) {
+                                                tooltip.classList.add('hidden');
+                                              }
+                                            }}
+                                            style={{ cursor: 'pointer' }}
+                                        >
                                           <line
                                               x1={`${x}%`}
                                               y1={`${y}%`}
@@ -1116,12 +1685,24 @@ export default function MysteryGame() {
                                               fill="#1e293b"
                                               stroke={clue.color}
                                               strokeWidth="2"
-                                          />
+                                              className="transition-all"
+                                              style={{ cursor: 'pointer' }}
+                                          >
+                                            <animate
+                                                attributeName="r"
+                                                values="8;10;8"
+                                                dur="2s"
+                                                repeatCount="indefinite"
+                                                begin="mouseover"
+                                                end="mouseout"
+                                            />
+                                          </circle>
                                           <circle
                                               cx={`${clueX}%`}
                                               cy={`${clueY}%`}
                                               r="4"
                                               fill={clue.color}
+                                              style={{ pointerEvents: 'none' }}
                                           />
                                         </g>
                                     );
@@ -1143,6 +1724,7 @@ export default function MysteryGame() {
                                       fontSize="10"
                                       fill={mysteryColor}
                                       fontWeight="bold"
+                                      style={{ pointerEvents: 'none' }}
                                   >
                                     {mystery}
                                   </text>
@@ -1152,6 +1734,7 @@ export default function MysteryGame() {
                                       textAnchor="middle"
                                       fontSize="8"
                                       fill="#94a3b8"
+                                      style={{ pointerEvents: 'none' }}
                                   >
                                     {clues.length} clue{clues.length !== 1 ? 's' : ''}
                                   </text>
@@ -1159,6 +1742,18 @@ export default function MysteryGame() {
                             );
                           })}
                         </svg>
+
+                        {/* Hover Tooltip */}
+                        <div
+                            id="web-tooltip"
+                            className="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-slate-800/95 backdrop-blur-sm p-4 rounded-xl border-2 shadow-2xl max-w-xs z-50 pointer-events-none"
+                        >
+                          <div id="web-tooltip-name" className="text-sm font-semibold text-cyan-400 mb-2"></div>
+                          <div id="web-tooltip-desc" className="text-xs text-slate-300 mb-2 leading-relaxed"></div>
+                          <div className="inline-block px-2 py-1 rounded-md bg-slate-700/50">
+                            <span id="web-tooltip-mystery" className="text-xs font-semibold"></span>
+                          </div>
+                        </div>
 
                         {/* Legend */}
                         <div className="absolute bottom-4 left-4 bg-slate-800/90 p-3 rounded-xl border border-slate-700">
@@ -1316,665 +1911,674 @@ export default function MysteryGame() {
               <div className="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 shadow-xl w-full">
                 {/* Location Image */}
                 <div className="relative h-96 bg-slate-900 overflow-hidden w-full">
-                  <img
-                      src={location.locationImage}
-                      alt={location.name}
-                      className="w-full h-full object-cover opacity-80"
-                  />
 
-                  {/* Interactive Spots - Keep these */}
-                  {location.interactiveSpots && location.interactiveSpots.map((spot, idx) => (
-                      <button
-                          key={idx}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleSpotClick(spot);
-                          }}
-                          className="absolute w-12 h-12 cursor-pointer z-20"
-                          style={{
-                            left: `${spot.x}%`,
-                            top: `${spot.y}%`,
-                            transform: 'translate(-50%, -50%)'
-                          }}
-                          title={spot.label}
-                      >
-                        <div className="relative w-full h-full">
-                          <div className="absolute inset-0 rounded-full border-4 border-yellow-400 bg-yellow-400/30 hover:bg-yellow-400/50 transition-all animate-pulse"></div>
-                          <div className="absolute inset-0 rounded-full border-2 border-yellow-400 animate-ping opacity-75"></div>
-                        </div>
-                      </button>
-                  ))}
+                <img
+                    src={location.locationImage}
+                    alt={location.name}
+                    className="w-full h-full object-cover opacity-80"
+                />
 
-                  {/* Action Buttons Overlay - Left Side */}
-                  <div className="absolute left-6 top-1/2 -translate-y-1/2 z-30">
-                    {/* Title */}
-                    <div className="mb-4 text-center">
-                      <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-1">Abilities</h3>
-                      <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
-                    </div>
+                {/* Interactive Spots - Keep these */}
+                {location.interactiveSpots && location.interactiveSpots.map((spot, idx) => (
+                    <button
+                        key={idx}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleSpotClick(spot);
+                        }}
+                        className="absolute w-12 h-12 cursor-pointer z-20"
+                        style={{
+                          left: `${spot.x}%`,
+                          top: `${spot.y}%`,
+                          transform: 'translate(-50%, -50%)'
+                        }}
+                        title={spot.label}
+                    >
+                      <div className="relative w-full h-full">
+                        <div
+                            className="absolute inset-0 rounded-full border-4 border-yellow-400 bg-yellow-400/30 hover:bg-yellow-400/50 transition-all animate-pulse"></div>
+                        <div
+                            className="absolute inset-0 rounded-full border-2 border-yellow-400 animate-ping opacity-75"></div>
+                      </div>
+                    </button>
+                ))}
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col gap-3">
-                      <button
-                          onClick={() => performAction('whisper')}
-                          className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-cyan-500 shadow-lg"
-                          title="Whisper"
-                      >
-                        <Volume2 size={28} className="text-cyan-400 group-hover:scale-110 transition-transform" />
-                        <div className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-cyan-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                          Whisper
-                        </div>
-                      </button>
-
-                      <button
-                          onClick={() => performAction('shout')}
-                          className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-red-500 shadow-lg"
-                          title="Shout"
-                      >
-                        <Volume2 size={36} className="text-red-400 group-hover:scale-110 transition-transform" />
-                        <div className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-red-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                          Shout
-                        </div>
-                      </button>
-
-                      <button
-                          onClick={() => performAction('ping')}
-                          className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-green-500 shadow-lg"
-                          title="Ping"
-                      >
-                        <Radio size={28} className="text-green-400 group-hover:scale-110 transition-transform" />
-                        <div className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-green-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                          Ping
-                        </div>
-                      </button>
-
-                      <button
-                          onClick={() => performAction('togglePower')}
-                          className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-yellow-500 shadow-lg"
-                          title="Toggle Power"
-                      >
-                        <Zap size={28} className="text-yellow-400 group-hover:scale-110 transition-transform" />
-                        <div className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-yellow-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                          Power
-                        </div>
-                      </button>
-                    </div>
+                {/* Action Buttons Overlay - Left Side */}
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 z-30">
+                  {/* Title */}
+                  <div className="mb-4 text-center">
+                    <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-1">Abilities</h3>
+                    <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
                   </div>
 
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-800 via-transparent to-transparent pointer-events-none z-10"></div>
+                  {/* Action Buttons */}
+                  <div className="flex flex-col gap-3">
+                    <button
+                        onClick={() => performAction('whisper')}
+                        className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-cyan-500 shadow-lg"
+                        title="Whisper"
+                    >
+                      <Volume2 size={28} className="text-cyan-400 group-hover:scale-110 transition-transform"/>
+                      <div
+                          className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-cyan-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                        Whisper
+                      </div>
+                    </button>
 
-                  {/* Location Info - Top Right */}
-                  <div className="absolute top-6 right-6 max-w-md pointer-events-none z-10">
-                    <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50 shadow-2xl">
-                      <div className="flex items-start gap-3">
-                        <div className="text-4xl drop-shadow-lg">{location.image}</div>
-                        <div className="flex-1">
-                          <h2 className="text-2xl font-bold text-white drop-shadow-lg mb-2">{location.name}</h2>
-                          <p className="text-slate-200 text-sm drop-shadow-md leading-relaxed">{location.description}</p>
-                        </div>
+                    <button
+                        onClick={() => performAction('shout')}
+                        className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-red-500 shadow-lg"
+                        title="Shout"
+                    >
+                      <Volume2 size={36} className="text-red-400 group-hover:scale-110 transition-transform"/>
+                      <div
+                          className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-red-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                        Shout
+                      </div>
+                    </button>
+
+                    <button
+                        onClick={() => performAction('ping')}
+                        className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-green-500 shadow-lg"
+                        title="Ping"
+                    >
+                      <Radio size={28} className="text-green-400 group-hover:scale-110 transition-transform"/>
+                      <div
+                          className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-green-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                        Ping
+                      </div>
+                    </button>
+
+                    <button
+                        onClick={() => performAction('togglePower')}
+                        className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-yellow-500 shadow-lg"
+                        title="Toggle Power"
+                    >
+                      <Zap size={28} className="text-yellow-400 group-hover:scale-110 transition-transform"/>
+                      <div
+                          className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-yellow-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                        Power
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Gradient Overlay */}
+                <div
+                    className="absolute inset-0 bg-gradient-to-t from-slate-800 via-transparent to-transparent pointer-events-none z-10"></div>
+
+                {/* Location Info - Top Right */}
+                <div className="absolute top-6 right-6 max-w-md pointer-events-none z-10">
+                  <div
+                      className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50 shadow-2xl">
+                    <div className="flex items-start gap-3">
+                      <div className="text-4xl drop-shadow-lg">{location.image}</div>
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-bold text-white drop-shadow-lg mb-2">{location.name}</h2>
+                        <p className="text-slate-200 text-sm drop-shadow-md leading-relaxed">{location.description}</p>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Sublocation Map - Show when at surface level OR at a sublocation */}
-                {(location.surfaceLevel || (!location.surfaceLevel && location.parent)) && (() => {
-                  // Determine which major location's sublocations to show
-                  const majorLocationKey = location.surfaceLevel ? currentLocation : location.parent;
-                  const majorLocation = GAME_DATA.locations[majorLocationKey];
-
-                  if (!majorLocation.subLocations || majorLocation.subLocations.length === 0) return null;
-
-                  return (
-                      <div className="px-6 pt-4 pb-4 border-b border-slate-700 bg-slate-800/30">
-                        <h3 className="text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wider">
-                          {majorLocation.name} - Local Area
-                        </h3>
-                        <div className="relative h-96 bg-slate-900 rounded-xl overflow-hidden border border-slate-600">
-                          <div className="absolute inset-0" style={{
-                            backgroundImage: 'radial-gradient(circle, #1e293b 1px, transparent 1px)',
-                            backgroundSize: '15px 15px'
-                          }}></div>
-
-                          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet">
-                            <defs>
-                              {/* Define gradient for paths */}
-                              <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#475569" stopOpacity="0.3"/>
-                                <stop offset="50%" stopColor="#475569" stopOpacity="0.6"/>
-                                <stop offset="100%" stopColor="#475569" stopOpacity="0.3"/>
-                              </linearGradient>
-                            </defs>
-
-                            {/* Draw connections from major location to sublocations */}
-                            {majorLocation.subLocations.map((subLocKey, idx) => {
-                              const subLoc = GAME_DATA.locations[subLocKey];
-                              let isRevealed = true;
-
-                              if (subLoc.initiallyHidden) {
-                                isRevealed = discoveredClues.includes(`REVEALED_${subLocKey}`);
-                              }
-                              if (subLoc.revealedBy) {
-                                isRevealed = discoveredClues.includes(subLoc.revealedBy);
-                              }
-
-                              if (!isRevealed) return null;
-
-                              // Organic positioning for sublocations (more spread out)
-                              const getSublocPosition = (index, total) => {
-                                const patterns = [
-                                  { x: 25, y: 35 },   // Upper left
-                                  { x: 95, y: 30 },   // Upper right
-                                  { x: 20, y: 85 },   // Lower left
-                                  { x: 90, y: 90 },   // Lower right
-                                  { x: 60, y: 20 },   // Top center
-                                  { x: 50, y: 100 },  // Bottom center
-                                ];
-                                return patterns[index % patterns.length] || { x: 60, y: 60 };
-                              };
-
-                              const majorPos = { x: 60, y: 60 }; // Center
-                              const pos = getSublocPosition(idx, majorLocation.subLocations.length);
-
-                              // Calculate control point for curved path
-                              const controlX = (majorPos.x + pos.x) / 2 + (Math.random() - 0.5) * 20;
-                              const controlY = (majorPos.y + pos.y) / 2 - 15;
-
-                              return (
-                                  <path
-                                      key={`major-line-${idx}`}
-                                      d={`M ${majorPos.x} ${majorPos.y} Q ${controlX} ${controlY} ${pos.x} ${pos.y}`}
-                                      stroke="url(#pathGradient)"
-                                      strokeWidth="1.2"
-                                      fill="none"
-                                      opacity="0.6"
-                                      strokeDasharray="4,3"
-                                  />
-                              );
-                            })}
-
-                            {/* Draw sublocation nodes and their interactive spots */}
-                            {majorLocation.subLocations.map((subLocKey, idx) => {
-                              const subLoc = GAME_DATA.locations[subLocKey];
-                              let isRevealed = true;
-
-                              if (subLoc.initiallyHidden) {
-                                isRevealed = discoveredClues.includes(`REVEALED_${subLocKey}`);
-                              }
-                              if (subLoc.revealedBy) {
-                                isRevealed = discoveredClues.includes(subLoc.revealedBy);
-                              }
-
-                              if (!isRevealed) return null;
-
-                              const isCurrent = currentLocation === subLocKey;
-                              const hasBeenVisited = discoveredClues.includes(`VISITED_${subLocKey}`) || isCurrent;
-
-                              // Organic positioning for sublocations (more spread out)
-                              const getSublocPosition = (index, total) => {
-                                const patterns = [
-                                  { x: 25, y: 35 },   // Upper left
-                                  { x: 95, y: 30 },   // Upper right
-                                  { x: 20, y: 85 },   // Lower left
-                                  { x: 90, y: 90 },   // Lower right
-                                  { x: 60, y: 20 },   // Top center
-                                  { x: 50, y: 100 },  // Bottom center
-                                ];
-                                return patterns[index % patterns.length] || { x: 60, y: 60 };
-                              };
-
-                              const pos = getSublocPosition(idx, majorLocation.subLocations.length);
-                              const x = pos.x;
-                              const y = pos.y;
-
-                              // Check if this sublocation has interactive spots
-                              const hasInteractiveSpots = subLoc.interactiveSpots && subLoc.interactiveSpots.length > 0;
-
-                              return (
-                                  <g key={subLocKey}>
-                                    {/* Draw interactive spots if sublocation has been visited */}
-                                    {hasBeenVisited && hasInteractiveSpots && subLoc.interactiveSpots.map((spot, spotIdx) => {
-                                      const numSpots = subLoc.interactiveSpots.length;
-
-                                      // Position spots in orbit around the sublocation with more spacing
-                                      const spotPositions = [
-                                        { offsetX: 0, offsetY: -22 },    // Above
-                                        { offsetX: 20, offsetY: -12 },   // Upper right
-                                        { offsetX: -20, offsetY: -12 },  // Upper left
-                                        { offsetX: 20, offsetY: 12 },    // Lower right
-                                        { offsetX: -20, offsetY: 12 },   // Lower left
-                                      ];
-
-                                      const spotOffset = spotPositions[spotIdx % spotPositions.length];
-                                      const spotX = x + spotOffset.offsetX;
-                                      const spotY = y + spotOffset.offsetY;
-
-                                      return (
-                                          <g key={`spot-${spotIdx}`}>
-                                            {/* Connection line with curve */}
-                                            <path
-                                                d={`M ${x} ${y} Q ${(x + spotX) / 2} ${(y + spotY) / 2 - 4} ${spotX} ${spotY}`}
-                                                stroke="#eab308"
-                                                strokeWidth="1"
-                                                fill="none"
-                                                opacity="0.7"
-                                                strokeDasharray="3,2"
-                                            />
-
-                                            {/* Interactive spot node */}
-                                            <circle
-                                                cx={spotX}
-                                                cy={spotY}
-                                                r="4"
-                                                fill="#854d0e"
-                                                stroke="#eab308"
-                                                strokeWidth="2"
-                                                className="cursor-pointer transition-all hover:fill-yellow-600 hover:r-5"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleSpotClick(spot);
-                                                }}
-                                            >
-                                              <animate
-                                                  attributeName="r"
-                                                  values="4;5.5;4"
-                                                  dur="2s"
-                                                  repeatCount="indefinite"
-                                              />
-                                            </circle>
-
-                                            {/* Pulsing outer ring */}
-                                            <circle
-                                                cx={spotX}
-                                                cy={spotY}
-                                                r="5"
-                                                fill="none"
-                                                stroke="#eab308"
-                                                strokeWidth="0.8"
-                                                opacity="0.6"
-                                            >
-                                              <animate
-                                                  attributeName="r"
-                                                  values="5;9;5"
-                                                  dur="2s"
-                                                  repeatCount="indefinite"
-                                              />
-                                              <animate
-                                                  attributeName="opacity"
-                                                  values="0.6;0;0.6"
-                                                  dur="2s"
-                                                  repeatCount="indefinite"
-                                              />
-                                            </circle>
-
-                                            {/* Spot label with background for readability */}
-                                            <rect
-                                                x={spotX - 10}
-                                                y={spotY - 13}
-                                                width="20"
-                                                height="6"
-                                                fill="#0f172a"
-                                                opacity="0.9"
-                                                rx="1.5"
-                                            />
-                                            <text
-                                                x={spotX}
-                                                y={spotY - 8.5}
-                                                textAnchor="middle"
-                                                fontSize="3"
-                                                fill="#fbbf24"
-                                                fontWeight="600"
-                                                className="pointer-events-none select-none"
-                                            >
-                                              {spot.label.length > 12 ? spot.label.substring(0, 10) + '...' : spot.label}
-                                            </text>
-                                          </g>
-                                      );
-                                    })}
-
-                                    {/* Main sublocation node */}
-                                    <g
-                                        onClick={() => !isCurrent && navigate(subLocKey)}
-                                        className={!isCurrent ? "cursor-pointer" : ""}
-                                        style={{ pointerEvents: 'all' }}
-                                    >
-                                      {/* Outer glow for current location */}
-                                      {isCurrent && (
-                                          <>
-                                            <circle
-                                                cx={x}
-                                                cy={y}
-                                                r="12"
-                                                fill="none"
-                                                stroke="#06b6d4"
-                                                strokeWidth="1.5"
-                                                opacity="0.4"
-                                            >
-                                              <animate
-                                                  attributeName="r"
-                                                  values="12;16;12"
-                                                  dur="2s"
-                                                  repeatCount="indefinite"
-                                              />
-                                            </circle>
-                                            <circle
-                                                cx={x}
-                                                cy={y}
-                                                r="14"
-                                                fill="none"
-                                                stroke="#06b6d4"
-                                                strokeWidth="0.8"
-                                                opacity="0.2"
-                                            >
-                                              <animate
-                                                  attributeName="r"
-                                                  values="14;18;14"
-                                                  dur="2s"
-                                                  repeatCount="indefinite"
-                                              />
-                                            </circle>
-                                          </>
-                                      )}
-
-                                      {/* Main node circle */}
-                                      <circle
-                                          cx={x}
-                                          cy={y}
-                                          r={isCurrent ? "7" : "5.5"}
-                                          fill={isCurrent ? "#06b6d4" : "#475569"}
-                                          stroke={isCurrent ? "#22d3ee" : "#64748b"}
-                                          strokeWidth="2.5"
-                                          className="transition-all duration-300"
-                                      />
-
-                                      {/* Location emoji - positioned above */}
-                                      <text
-                                          x={x}
-                                          y={y - 12}
-                                          textAnchor="middle"
-                                          fontSize="14"
-                                          className="pointer-events-none select-none"
-                                      >
-                                        {subLoc.image}
-                                      </text>
-
-                                      {/* Location name with background for readability */}
-                                      <rect
-                                          x={x - 15}
-                                          y={y + 9}
-                                          width="30"
-                                          height="7"
-                                          fill="#0f172a"
-                                          opacity="0.9"
-                                          rx="2"
-                                      />
-                                      <text
-                                          x={x}
-                                          y={y + 14}
-                                          textAnchor="middle"
-                                          fontSize="4"
-                                          fill={isCurrent ? "#22d3ee" : "#94a3b8"}
-                                          fontWeight={isCurrent ? "bold" : "600"}
-                                          className="pointer-events-none select-none"
-                                      >
-                                        {subLoc.name}
-                                      </text>
-                                    </g>
-                                  </g>
-                              );
-                            })}
-
-                            {/* Major Location Node (Center) */}
-                            <g
-                                onClick={() => location.surfaceLevel ? null : navigate(majorLocationKey)}
-                                className={location.surfaceLevel ? "" : "cursor-pointer"}
-                                style={{ pointerEvents: 'all' }}
-                            >
-                              {/* Outer glow for current major location */}
-                              {location.surfaceLevel && (
-                                  <>
-                                    <circle
-                                        cx="60"
-                                        cy="60"
-                                        r="16"
-                                        fill="none"
-                                        stroke="#a855f7"
-                                        strokeWidth="2"
-                                        opacity="0.4"
-                                    >
-                                      <animate
-                                          attributeName="r"
-                                          values="16;20;16"
-                                          dur="2.5s"
-                                          repeatCount="indefinite"
-                                      />
-                                    </circle>
-                                    <circle
-                                        cx="60"
-                                        cy="60"
-                                        r="18"
-                                        fill="none"
-                                        stroke="#a855f7"
-                                        strokeWidth="1"
-                                        opacity="0.2"
-                                    >
-                                      <animate
-                                          attributeName="r"
-                                          values="18;24;18"
-                                          dur="2.5s"
-                                          repeatCount="indefinite"
-                                      />
-                                    </circle>
-                                  </>
-                              )}
-
-                              {/* Main major location circle */}
-                              <circle
-                                  cx="60"
-                                  cy="60"
-                                  r={location.surfaceLevel ? "10" : "8"}
-                                  fill={location.surfaceLevel ? "#a855f7" : "#64748b"}
-                                  stroke={location.surfaceLevel ? "#c084fc" : "#94a3b8"}
-                                  strokeWidth="3"
-                                  className="transition-all duration-300"
-                              />
-
-                              {/* Major location emoji */}
-                              <text
-                                  x="60"
-                                  y="45"
-                                  textAnchor="middle"
-                                  fontSize="18"
-                                  className="pointer-events-none select-none"
-                              >
-                                {majorLocation.image}
-                              </text>
-
-                              {/* Major location name with background */}
-                              <rect
-                                  x="42"
-                                  y="71"
-                                  width="36"
-                                  height="8"
-                                  fill="#0f172a"
-                                  opacity="0.95"
-                                  rx="2"
-                              />
-                              <text
-                                  x="60"
-                                  y="77"
-                                  textAnchor="middle"
-                                  fontSize="4.5"
-                                  fill={location.surfaceLevel ? "#c084fc" : "#cbd5e1"}
-                                  fontWeight="bold"
-                                  className="pointer-events-none select-none"
-                              >
-                                {majorLocation.name}
-                              </text>
-                            </g>
-
-                            {/* Animated character indicator (shows during navigation) */}
-                            {/* This would be controlled by state - placeholder for now */}
-                            {/* Animated character indicator */}
-                            {animatingPath && (() => {
-                              const getPosition = (locKey) => {
-                                if (locKey === majorLocationKey) return { x: 60, y: 60 };
-
-                                const subLocIdx = majorLocation.subLocations.indexOf(locKey);
-                                const patterns = [
-                                  { x: 25, y: 35 },
-                                  { x: 95, y: 30 },
-                                  { x: 20, y: 85 },
-                                  { x: 90, y: 90 },
-                                  { x: 60, y: 20 },
-                                  { x: 50, y: 100 },
-                                ];
-                                return patterns[subLocIdx % patterns.length] || { x: 60, y: 60 };
-                              };
-
-                              const fromPos = getPosition(animatingPath.from);
-                              const toPos = getPosition(animatingPath.to);
-                              const controlX = (fromPos.x + toPos.x) / 2;
-                              const controlY = (fromPos.y + toPos.y) / 2 - 15;
-
-                              return (
-                                  <g>
-                                    <circle cx={fromPos.x} cy={fromPos.y} r="3" fill="#22d3ee" opacity="0.8">
-                                      <animateMotion
-                                          dur="1.5s"
-                                          repeatCount="1"
-                                          path={`M 0 0 Q ${controlX - fromPos.x} ${controlY - fromPos.y} ${toPos.x - fromPos.x} ${toPos.y - fromPos.y}`}
-                                      />
-                                    </circle>
-                                    <circle cx={fromPos.x} cy={fromPos.y} r="2" fill="#ffffff">
-                                      <animateMotion
-                                          dur="1.5s"
-                                          repeatCount="1"
-                                          path={`M 0 0 Q ${controlX - fromPos.x} ${controlY - fromPos.y} ${toPos.x - fromPos.x} ${toPos.y - fromPos.y}`}
-                                      />
-                                    </circle>
-                                  </g>
-                              );
-                            })()}
-                          </svg>
+                {/* Recent Activity - MOVED HERE */}
+                <div className="px-6 py-4 border-b border-slate-700 bg-slate-800/50">
+                  <h3 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Recent
+                    Activity</h3>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {[...actionLog].reverse().slice(0, 3).map((log, i) => (
+                        <div key={i} className="p-3 bg-slate-700/30 rounded-lg text-xs border-l-2 border-cyan-500/50">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="text-cyan-400 font-semibold uppercase text-xs">
+                              {log.action}
+                            </div>
+                            <div className="text-slate-500 text-xs">•</div>
+                            <div className="text-slate-500 text-xs">{log.location}</div>
+                          </div>
+                          <div className="text-slate-300 text-xs leading-relaxed">{log.result}</div>
                         </div>
+                    ))}
+                    {actionLog.length === 0 && (
+                        <p className="text-slate-500 text-xs italic text-center py-2">No actions taken yet</p>
+                    )}
+                  </div>
+                </div>
+
+
+                {/* Travel Indicator Overlay */}
+                {animatingPath && (
+                    <div className="px-6 py-3 bg-slate-800/90 backdrop-blur-sm border-t border-slate-700">
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                          <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                          <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        </div>
+                        <span className="text-sm text-cyan-400 font-semibold">
+                    Traveling to {GAME_DATA.locations[animatingPath.to].name}...
+                  </span>
                       </div>
-                  );
-                })()}
+                    </div>
+                )}
               </div>
             </div>
             {/* Right Column - Info Panels */}
             <div className="w-80 space-y-6 flex-shrink-0">
-              {/* Station Map */}
+              {/* Station Map with Toggle */}
               <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-xl w-full">
-                <h3 className="text-sm font-semibold text-cyan-400 mb-3">Station Map</h3>
-                <div className="relative aspect-square bg-slate-900 rounded-xl overflow-hidden border border-slate-600">
-                  <div className="absolute inset-0" style={{
-                    backgroundImage: 'radial-gradient(circle, #1e293b 1px, transparent 1px)',
-                    backgroundSize: '20px 20px'
-                  }}></div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-cyan-400">Map</h3>
 
-                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="#0f172a" stroke="#334155" strokeWidth="0.5"/>
+                  {/* Slider Toggle Switch */}
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs transition-colors ${mapView === 'global' ? 'text-cyan-400 font-semibold' : 'text-slate-500'}`}>
+                      🪐Global
+                    </span>
+                    <button
+                        onClick={() => setMapView(mapView === 'global' ? 'local' : 'global')}
+                        className="relative w-12 h-6 bg-slate-700 rounded-full transition-colors hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-800"
+                        aria-label="Toggle map view"
+                    >
+                      {/* Slider knob */}
+                      <div
+                          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${
+                              mapView === 'local' ? 'translate-x-6' : 'translate-x-0'
+                          }`}
+                      >
+                        {/* Inner dot for visual interest */}
+                        <div className={`absolute inset-0 m-auto w-2 h-2 rounded-full transition-colors ${
+                            mapView === 'global' ? 'bg-cyan-400' : 'bg-purple-400'
+                        }`}></div>
+                      </div>
 
-                    {Object.entries(GAME_DATA.locations).map(([key, loc]) => {
-                      // Check if location should be visible on map
-                      let isRevealed = true;
-
-                      // If it has initiallyHidden, check if it's been revealed by action
-                      if (loc.initiallyHidden) {
-                        isRevealed = discoveredClues.includes(`REVEALED_${key}`);
-                      }
-
-                      // If it has revealedBy, check if that clue has been discovered
-                      if (loc.revealedBy) {
-                        isRevealed = discoveredClues.includes(loc.revealedBy);
-                      }
-
-                      const isVisible = isRevealed && (
-                          loc.surfaceLevel ||
-                          key === currentLocation ||
-                          (loc.parent && currentLocation === loc.parent)
-                      );
-
-                      if (!isVisible) return null;
-
-                      const isSurface = loc.surfaceLevel;
-                      const isCurrent = key === currentLocation;
-
-                      return (
-                          <g key={key}
-                             onClick={() => {
-                               if (isSurface && !isCurrent) {
-                                 navigate(key);
-                               }
-                             }}
-                             className={isSurface && !isCurrent ? "cursor-pointer" : ""}>
-                            <circle
-                                cx={loc.mapPosition.x}
-                                cy={loc.mapPosition.y}
-                                r={isCurrent ? "5" : (isSurface ? "4" : "2.5")}
-                                fill={isCurrent ? "#06b6d4" : (isSurface ? "#475569" : "#334155")}
-                                stroke={isCurrent ? "#22d3ee" : (isSurface ? "#64748b" : "#475569")}
-                                strokeWidth={isSurface ? "1" : "0.5"}
-                                className="transition-all duration-300"
-                            />
-                            {isCurrent && (
-                                <>
-                                  <circle
-                                      cx={loc.mapPosition.x}
-                                      cy={loc.mapPosition.y}
-                                      r="7"
-                                      fill="none"
-                                      stroke="#06b6d4"
-                                      strokeWidth="0.5"
-                                      opacity="0.5"
-                                  />
-                                  <circle
-                                      cx={loc.mapPosition.x}
-                                      cy={loc.mapPosition.y}
-                                      r="9"
-                                      fill="none"
-                                      stroke="#06b6d4"
-                                      strokeWidth="0.3"
-                                      opacity="0.3"
-                                  />
-                                </>
-                            )}
-                            <text
-                                x={loc.mapPosition.x}
-                                y={loc.mapPosition.y + (isCurrent ? 18 : (isSurface ? 14 : 10))}
-                                textAnchor="middle"
-                                fontSize={isCurrent ? "4" : (isSurface ? "3.2" : "2.5")}
-                                fill={isCurrent ? "#22d3ee" : (isSurface ? "#94a3b8" : "#64748b")}
-                                fontWeight={isCurrent ? "bold" : (isSurface ? "600" : "normal")}
-                                className="pointer-events-none select-none"
-                                style={{
-                                  textShadow: '0 0 3px #000',
-                                  opacity: isCurrent ? 1 : (isSurface ? 0.9 : 0.7)
-                                }}
-                            >
-                              {loc.name}
-                            </text>
-                          </g>
-                      );
-                    })}
-                  </svg>
+                      {/* Optional: Track highlight */}
+                      <div className={`absolute inset-0 rounded-full transition-colors ${
+                          mapView === 'global' ? 'bg-cyan-900/30' : 'bg-purple-900/30'
+                      }`}></div>
+                    </button>
+                    <span className={`text-xs transition-colors ${mapView === 'local' ? 'text-purple-400 font-semibold' : 'text-slate-500'}`}>
+                      📌Local
+                    </span>
+                  </div>
                 </div>
 
+                {/* Map View Container */}
+                <div className="relative aspect-square bg-gradient-to-b from-black via-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-600">
+                  {mapView === 'global' ? (
+                      /* Global 3D Planet View */
+                      <Planet3D currentLocation={currentLocation} onLocationClick={navigate} discoveredClues={discoveredClues} />
+                  ) : (
+                      /* Local Sublocation View */
+                      (() => {
+                        // Determine which major location's sublocations to show
+                        const majorLocationKey = location.surfaceLevel ? currentLocation : location.parent;
+                        const majorLocation = GAME_DATA.locations[majorLocationKey];
+
+                        if (!majorLocation.subLocations || majorLocation.subLocations.length === 0) {
+                          return (
+                              <div className="flex items-center justify-center h-full text-slate-500 text-sm italic p-4 text-center">
+                                No sublocations in this area
+                              </div>
+                          );
+                        }
+
+                        return (
+                            <>
+                              <div className="absolute inset-0" style={{
+                                backgroundImage: 'radial-gradient(circle, #1e293b 1px, transparent 1px)',
+                                backgroundSize: '15px 15px'
+                              }}></div>
+
+                              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 120 120"
+                                   preserveAspectRatio="xMidYMid meet">
+                                <defs>
+                                  <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="#475569" stopOpacity="0.3"/>
+                                    <stop offset="50%" stopColor="#475569" stopOpacity="0.6"/>
+                                    <stop offset="100%" stopColor="#475569" stopOpacity="0.3"/>
+                                  </linearGradient>
+                                </defs>
+
+                                {/* Draw connections from major location to sublocations */}
+                                {majorLocation.subLocations.map((subLocKey, idx) => {
+                                  const subLoc = GAME_DATA.locations[subLocKey];
+                                  let isRevealed = true;
+
+                                  if (subLoc.initiallyHidden) {
+                                    isRevealed = discoveredClues.includes(`REVEALED_${subLocKey}`);
+                                  }
+                                  if (subLoc.revealedBy) {
+                                    isRevealed = discoveredClues.includes(subLoc.revealedBy);
+                                  }
+
+                                  if (!isRevealed) return null;
+
+                                  const getSublocPosition = (index, total) => {
+                                    const patterns = [
+                                      {x: 25, y: 35},
+                                      {x: 95, y: 30},
+                                      {x: 20, y: 85},
+                                      {x: 90, y: 90},
+                                      {x: 60, y: 20},
+                                      {x: 50, y: 100},
+                                    ];
+                                    return patterns[index % patterns.length] || {x: 60, y: 60};
+                                  };
+
+                                  const majorPos = {x: 60, y: 60};
+                                  const pos = getSublocPosition(idx, majorLocation.subLocations.length);
+
+                                  const controlX = (majorPos.x + pos.x) / 2 + (Math.random() - 0.5) * 20;
+                                  const controlY = (majorPos.y + pos.y) / 2 - 15;
+
+                                  return (
+                                      <path
+                                          key={`major-line-${idx}`}
+                                          d={`M ${majorPos.x} ${majorPos.y} Q ${controlX} ${controlY} ${pos.x} ${pos.y}`}
+                                          stroke="url(#pathGradient)"
+                                          strokeWidth="1.2"
+                                          fill="none"
+                                          opacity="0.6"
+                                          strokeDasharray="4,3"
+                                      />
+                                  );
+                                })}
+
+                                {/* Draw sublocation nodes and their interactive spots */}
+                                {majorLocation.subLocations.map((subLocKey, idx) => {
+                                  const subLoc = GAME_DATA.locations[subLocKey];
+                                  let isRevealed = true;
+
+                                  if (subLoc.initiallyHidden) {
+                                    isRevealed = discoveredClues.includes(`REVEALED_${subLocKey}`);
+                                  }
+                                  if (subLoc.revealedBy) {
+                                    isRevealed = discoveredClues.includes(subLoc.revealedBy);
+                                  }
+
+                                  if (!isRevealed) return null;
+
+                                  const isCurrent = currentLocation === subLocKey;
+                                  const hasBeenVisited = discoveredClues.includes(`VISITED_${subLocKey}`) || isCurrent;
+
+                                  const getSublocPosition = (index, total) => {
+                                    const patterns = [
+                                      {x: 25, y: 35},
+                                      {x: 95, y: 30},
+                                      {x: 20, y: 85},
+                                      {x: 90, y: 90},
+                                      {x: 60, y: 20},
+                                      {x: 50, y: 100},
+                                    ];
+                                    return patterns[index % patterns.length] || {x: 60, y: 60};
+                                  };
+
+                                  const pos = getSublocPosition(idx, majorLocation.subLocations.length);
+                                  const x = pos.x;
+                                  const y = pos.y;
+
+                                  const hasInteractiveSpots = subLoc.interactiveSpots && subLoc.interactiveSpots.length > 0;
+
+                                  return (
+                                      <g key={subLocKey}>
+                                        {hasBeenVisited && hasInteractiveSpots && subLoc.interactiveSpots.map((spot, spotIdx) => {
+                                          const numSpots = subLoc.interactiveSpots.length;
+
+                                          const spotPositions = [
+                                            {offsetX: 0, offsetY: -22},
+                                            {offsetX: 20, offsetY: -12},
+                                            {offsetX: -20, offsetY: -12},
+                                            {offsetX: 20, offsetY: 12},
+                                            {offsetX: -20, offsetY: 12},
+                                          ];
+
+                                          const spotOffset = spotPositions[spotIdx % spotPositions.length];
+                                          const spotX = x + spotOffset.offsetX;
+                                          const spotY = y + spotOffset.offsetY;
+
+                                          return (
+                                              <g key={`spot-${spotIdx}`}>
+                                                <path
+                                                    d={`M ${x} ${y} Q ${(x + spotX) / 2} ${(y + spotY) / 2 - 4} ${spotX} ${spotY}`}
+                                                    stroke="#eab308"
+                                                    strokeWidth="1"
+                                                    fill="none"
+                                                    opacity="0.7"
+                                                    strokeDasharray="3,2"
+                                                />
+
+                                                <circle
+                                                    cx={spotX}
+                                                    cy={spotY}
+                                                    r="4"
+                                                    fill="#854d0e"
+                                                    stroke="#eab308"
+                                                    strokeWidth="2"
+                                                    className="cursor-pointer transition-all hover:fill-yellow-600 hover:r-5"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      handleSpotClick(spot);
+                                                    }}
+                                                >
+                                                  <animate
+                                                      attributeName="r"
+                                                      values="4;5.5;4"
+                                                      dur="2s"
+                                                      repeatCount="indefinite"
+                                                  />
+                                                </circle>
+
+                                                <circle
+                                                    cx={spotX}
+                                                    cy={spotY}
+                                                    r="5"
+                                                    fill="none"
+                                                    stroke="#eab308"
+                                                    strokeWidth="0.8"
+                                                    opacity="0.6"
+                                                >
+                                                  <animate
+                                                      attributeName="r"
+                                                      values="5;9;5"
+                                                      dur="2s"
+                                                      repeatCount="indefinite"
+                                                  />
+                                                  <animate
+                                                      attributeName="opacity"
+                                                      values="0.6;0;0.6"
+                                                      dur="2s"
+                                                      repeatCount="indefinite"
+                                                  />
+                                                </circle>
+
+                                                <rect
+                                                    x={spotX - 10}
+                                                    y={spotY - 13}
+                                                    width="20"
+                                                    height="6"
+                                                    fill="#0f172a"
+                                                    opacity="0.9"
+                                                    rx="1.5"
+                                                />
+                                                <text
+                                                    x={spotX}
+                                                    y={spotY - 8.5}
+                                                    textAnchor="middle"
+                                                    fontSize="3"
+                                                    fill="#fbbf24"
+                                                    fontWeight="600"
+                                                    className="pointer-events-none select-none"
+                                                >
+                                                  {spot.label.length > 12 ? spot.label.substring(0, 10) + '...' : spot.label}
+                                                </text>
+                                              </g>
+                                          );
+                                        })}
+
+                                        <g
+                                            onClick={() => !isCurrent && navigate(subLocKey)}
+                                            className={!isCurrent ? "cursor-pointer" : ""}
+                                            style={{pointerEvents: 'all'}}
+                                        >
+                                          {isCurrent && (
+                                              <>
+                                                <circle
+                                                    cx={x}
+                                                    cy={y}
+                                                    r="12"
+                                                    fill="none"
+                                                    stroke="#06b6d4"
+                                                    strokeWidth="1.5"
+                                                    opacity="0.4"
+                                                >
+                                                  <animate
+                                                      attributeName="r"
+                                                      values="12;16;12"
+                                                      dur="2s"
+                                                      repeatCount="indefinite"
+                                                  />
+                                                </circle>
+                                                <circle
+                                                    cx={x}
+                                                    cy={y}
+                                                    r="14"
+                                                    fill="none"
+                                                    stroke="#06b6d4"
+                                                    strokeWidth="0.8"
+                                                    opacity="0.2"
+                                                >
+                                                  <animate
+                                                      attributeName="r"
+                                                      values="14;18;14"
+                                                      dur="2s"
+                                                      repeatCount="indefinite"
+                                                  />
+                                                </circle>
+                                              </>
+                                          )}
+
+                                          <circle
+                                              cx={x}
+                                              cy={y}
+                                              r={isCurrent ? "7" : "5.5"}
+                                              fill={isCurrent ? "#06b6d4" : "#475569"}
+                                              stroke={isCurrent ? "#22d3ee" : "#64748b"}
+                                              strokeWidth="2.5"
+                                              className="transition-all duration-300"
+                                          />
+
+                                          <text
+                                              x={x}
+                                              y={y - 12}
+                                              textAnchor="middle"
+                                              fontSize="14"
+                                              className="pointer-events-none select-none"
+                                          >
+                                            {subLoc.image}
+                                          </text>
+
+                                          <rect
+                                              x={x - 15}
+                                              y={y + 9}
+                                              width="30"
+                                              height="7"
+                                              fill="#0f172a"
+                                              opacity="0.9"
+                                              rx="2"
+                                          />
+                                          <text
+                                              x={x}
+                                              y={y + 14}
+                                              textAnchor="middle"
+                                              fontSize="4"
+                                              fill={isCurrent ? "#22d3ee" : "#94a3b8"}
+                                              fontWeight={isCurrent ? "bold" : "600"}
+                                              className="pointer-events-none select-none"
+                                          >
+                                            {subLoc.name}
+                                          </text>
+                                        </g>
+                                      </g>
+                                  );
+                                })}
+
+                                {/* Major Location Node (Center) */}
+                                <g
+                                    onClick={() => location.surfaceLevel ? null : navigate(majorLocationKey)}
+                                    className={location.surfaceLevel ? "" : "cursor-pointer"}
+                                    style={{pointerEvents: 'all'}}
+                                >
+                                  {location.surfaceLevel && (
+                                      <>
+                                        <circle
+                                            cx="60"
+                                            cy="60"
+                                            r="16"
+                                            fill="none"
+                                            stroke="#a855f7"
+                                            strokeWidth="2"
+                                            opacity="0.4"
+                                        >
+                                          <animate
+                                              attributeName="r"
+                                              values="16;20;16"
+                                              dur="2.5s"
+                                              repeatCount="indefinite"
+                                          />
+                                        </circle>
+                                        <circle
+                                            cx="60"
+                                            cy="60"
+                                            r="18"
+                                            fill="none"
+                                            stroke="#a855f7"
+                                            strokeWidth="1"
+                                            opacity="0.2"
+                                        >
+                                          <animate
+                                              attributeName="r"
+                                              values="18;24;18"
+                                              dur="2.5s"
+                                              repeatCount="indefinite"
+                                          />
+                                        </circle>
+                                      </>
+                                  )}
+
+                                  <circle
+                                      cx="60"
+                                      cy="60"
+                                      r={location.surfaceLevel ? "10" : "8"}
+                                      fill={location.surfaceLevel ? "#a855f7" : "#64748b"}
+                                      stroke={location.surfaceLevel ? "#c084fc" : "#94a3b8"}
+                                      strokeWidth="3"
+                                      className="transition-all duration-300"
+                                  />
+
+                                  <text
+                                      x="60"
+                                      y="45"
+                                      textAnchor="middle"
+                                      fontSize="18"
+                                      className="pointer-events-none select-none"
+                                  >
+                                    {majorLocation.image}
+                                  </text>
+
+                                  <rect
+                                      x="42"
+                                      y="71"
+                                      width="36"
+                                      height="8"
+                                      fill="#0f172a"
+                                      opacity="0.95"
+                                      rx="2"
+                                  />
+                                  <text
+                                      x="60"
+                                      y="77"
+                                      textAnchor="middle"
+                                      fontSize="4.5"
+                                      fill={location.surfaceLevel ? "#c084fc" : "#cbd5e1"}
+                                      fontWeight="bold"
+                                      className="pointer-events-none select-none"
+                                  >
+                                    {majorLocation.name}
+                                  </text>
+                                </g>
+
+                                {animatingPath && (() => {
+                                  const getPosition = (locKey) => {
+                                    if (locKey === majorLocationKey) return {x: 60, y: 60};
+
+                                    const subLocIdx = majorLocation.subLocations.indexOf(locKey);
+                                    const patterns = [
+                                      {x: 25, y: 35},
+                                      {x: 95, y: 30},
+                                      {x: 20, y: 85},
+                                      {x: 90, y: 90},
+                                      {x: 60, y: 20},
+                                      {x: 50, y: 100},
+                                    ];
+                                    return patterns[subLocIdx % patterns.length] || {x: 60, y: 60};
+                                  };
+
+                                  const fromPos = getPosition(animatingPath.from);
+                                  const toPos = getPosition(animatingPath.to);
+                                  const controlX = (fromPos.x + toPos.x) / 2;
+                                  const controlY = (fromPos.y + toPos.y) / 2 - 15;
+
+                                  return (
+                                      <g>
+                                        <circle cx={fromPos.x} cy={fromPos.y} r="6" fill="#22d3ee" opacity="0.3">
+                                          <animateMotion
+                                              dur="1.5s"
+                                              repeatCount="1"
+                                              fill="freeze"
+                                              path={`M 0 0 Q ${controlX - fromPos.x} ${controlY - fromPos.y} ${toPos.x - fromPos.x} ${toPos.y - fromPos.y}`}
+                                          />
+                                          <animate
+                                              attributeName="r"
+                                              values="6;8;6"
+                                              dur="0.5s"
+                                              repeatCount="indefinite"
+                                          />
+                                        </circle>
+
+                                        <circle cx={fromPos.x} cy={fromPos.y} r="4" fill="#22d3ee" opacity="0.9">
+                                          <animateMotion
+                                              dur="1.5s"
+                                              repeatCount="1"
+                                              fill="freeze"
+                                              path={`M 0 0 Q ${controlX - fromPos.x} ${controlY - fromPos.y} ${toPos.x - fromPos.x} ${toPos.y - fromPos.y}`}
+                                          />
+                                        </circle>
+
+                                        <circle cx={fromPos.x} cy={fromPos.y} r="2" fill="#ffffff">
+                                          <animateMotion
+                                              dur="1.5s"
+                                              repeatCount="1"
+                                              fill="freeze"
+                                              path={`M 0 0 Q ${controlX - fromPos.x} ${controlY - fromPos.y} ${toPos.x - fromPos.x} ${toPos.y - fromPos.y}`}
+                                          />
+                                        </circle>
+
+                                        <circle cx={fromPos.x} cy={fromPos.y} r="3" fill="#06b6d4" opacity="0.5">
+                                          <animateMotion
+                                              dur="1.5s"
+                                              repeatCount="1"
+                                              fill="freeze"
+                                              path={`M 0 0 Q ${controlX - fromPos.x} ${controlY - fromPos.y} ${toPos.x - fromPos.x} ${toPos.y - fromPos.y}`}
+                                              begin="0.1s"
+                                          />
+                                          <animate
+                                              attributeName="opacity"
+                                              values="0.5;0.2;0"
+                                              dur="1.5s"
+                                              repeatCount="1"
+                                          />
+                                        </circle>
+                                      </g>
+                                  );
+                                })()}
+                              </svg>
+                            </>
+                        );
+                      })()
+                  )}
+                </div>
+
+                {/* Location list below map */}
                 <div className="mt-3 space-y-1 text-xs text-slate-400">
                   {Object.entries(GAME_DATA.locations).map(([key, loc]) => {
-                    // Check if location should be visible in list
                     let isRevealed = true;
 
-                    // If it has initiallyHidden, check if it's been revealed by action
                     if (loc.initiallyHidden) {
                       isRevealed = discoveredClues.includes(`REVEALED_${key}`);
                     }
 
-                    // If it has revealedBy, check if that clue has been discovered
                     if (loc.revealedBy) {
                       isRevealed = discoveredClues.includes(loc.revealedBy);
                     }
@@ -1987,14 +2591,21 @@ export default function MysteryGame() {
 
                     if (!isVisible) return null;
 
+                    const isSubLocation = !loc.surfaceLevel && loc.parent;
+
                     return (
-                        <div key={key} className="flex items-center gap-2">
+                        <div key={key} className={`flex items-center gap-2 ${isSubLocation ? 'pl-4' : ''}`}>
                           <div className={`w-1.5 h-1.5 rounded-full ${
                               key === currentLocation ? 'bg-cyan-400' : (loc.surfaceLevel ? 'bg-slate-500' : 'bg-slate-600')
                           }`}></div>
+                          {isSubLocation && (
+                              <div className="w-2 h-px bg-slate-600"></div>
+                          )}
                           <span className={`truncate text-xs ${
                               key === currentLocation ? 'text-cyan-400 font-semibold' : ''
-                          }`}>{loc.name}</span>
+                          } ${isSubLocation ? 'text-slate-500' : ''}`}>
+                            {loc.name}
+                          </span>
                         </div>
                     );
                   })}
@@ -2034,21 +2645,6 @@ export default function MysteryGame() {
                   {Object.keys(cluesByMystery).length === 0 && (
                       <p className="text-sm text-slate-500 italic">No mysteries discovered yet</p>
                   )}
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-xl">
-                <h3 className="text-sm font-semibold text-slate-400 mb-3">Recent Activity</h3>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {[...actionLog].reverse().slice(0, 5).map((log, i) => (
-                      <div key={i} className="p-2 bg-slate-700/30 rounded-lg text-xs border-l-2 border-slate-600">
-                        <div className="text-slate-500 mb-1 text-xs uppercase">
-                          {log.action}
-                        </div>
-                        <div className="text-slate-400 text-xs leading-relaxed">{log.result}</div>
-                      </div>
-                  ))}
                 </div>
               </div>
             </div>
