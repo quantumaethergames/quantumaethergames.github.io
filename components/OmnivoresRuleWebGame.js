@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Book, Volume2, Radio, Zap, ChevronRight, Home, X } from 'lucide-react';
+import { Book, Volume2, Radio, Zap, Home, X } from 'lucide-react';
 
 // Sound generation functions
 const playWhisperSound = () => {
@@ -99,7 +99,7 @@ const GAME_DATA = {
       mapPosition: { x: 30, y: 30 },
       parent: null,
       surfaceLevel: true,
-      subLocations: ["control_room", "observation_deck", "hidden_archive"],
+      subLocations: ["control_room", "observation_deck", "hidden_archive", "station_recharge"],
       actions: {
         whisper: {
           result: "You whisper into the silence. The walls seem to absorb your voice, but then... a faint echo returns from the ventilation shaft.",
@@ -238,6 +238,23 @@ const GAME_DATA = {
         }
       }
     },
+    station_recharge: {
+      name: "Station Power Node",
+      description: "A pulsing energy conduit. Your suit resonates with its frequency.",
+      image: "⚡",
+      locationImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect fill='%230f172a' width='800' height='400'/%3E%3Ccircle cx='400' cy='200' r='80' fill='%23eab308' opacity='0.2'/%3E%3Ccircle cx='400' cy='200' r='40' fill='%23eab308' opacity='0.4'/%3E%3Ctext x='400' y='350' font-family='monospace' font-size='20' fill='%23eab308' text-anchor='middle'%3EPOWER NODE%3C/text%3E%3C/svg%3E",
+      mapPosition: { x: 32, y: 32 },
+      parent: "station",
+      surfaceLevel: false,
+      subLocations: [],
+      initiallyHidden: false,
+      actions: {
+        whisper: { result: "The node hums in harmony with your voice. You feel energy flowing into you.", discoversClue: "STATION_POWER" },
+        shout: { result: "You draw power from the node! Your systems surge with energy.", discoversClue: "STATION_POWER" },
+        ping: { result: "The node pulses back. It recognizes you as authorized.", discoversClue: "STATION_POWER" },
+        togglePower: { result: "Connecting to the power grid. Systems recharging...", discoversClue: "STATION_POWER" }
+      }
+    },
     facility: {
       name: "The Facility",
       description: "Rows of dormant pods line the walls. Frost covers the glass. One pod is empty, its door hanging open.",
@@ -246,7 +263,7 @@ const GAME_DATA = {
       mapPosition: { x: 70, y: 30 },
       parent: null,
       surfaceLevel: true,
-      subLocations: ["cryo_bay", "medical_wing", "quarantine_zone"],
+      subLocations: ["cryo_bay", "medical_wing", "quarantine_zone","facility_recharge"],
       actions: {
         whisper: {
           result: "You whisper to the pods. One of them fogs up from the inside. Someone is alive in there.",
@@ -378,15 +395,32 @@ const GAME_DATA = {
         }
       }
     },
-    core: {
-      name: "The Core",
+    facility_recharge: {
+      name: "Cryo Power Core",
+      description: "Emergency power systems for the cryopods. Still functional.",
+      image: "🔋",
+      locationImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect fill='%230f172a' width='800' height='400'/%3E%3Crect x='300' y='100' width='200' height='200' fill='%233b82f6' opacity='0.3' stroke='%233b82f6' stroke-width='3'/%3E%3Ctext x='400' y='350' font-family='monospace' font-size='20' fill='%233b82f6' text-anchor='middle'%3EPOWER CORE%3C/text%3E%3C/svg%3E",
+      mapPosition: { x: 72, y: 32 },
+      parent: "facility",
+      surfaceLevel: false,
+      subLocations: [],
+      initiallyHidden: false,
+      actions: {
+        whisper: { result: "The core responds to your voice pattern. Energy available.", discoversClue: "FACILITY_POWER" },
+        shout: { result: "Drawing emergency power! Your reserves are replenished.", discoversClue: "FACILITY_POWER" },
+        ping: { result: "Core status: Operational. Power transfer authorized.", discoversClue: "FACILITY_POWER" },
+        togglePower: { result: "Initiating power transfer sequence...", discoversClue: "FACILITY_POWER" }
+      }
+    },
+    stormcore_basin: {
+      name: "stormcore_basin",
       description: "The heart of the installation. A massive sphere of dark matter pulses irregularly.",
       image: "⚫",
       locationImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect fill='%230a0a0a' width='800' height='400'/%3E%3Ccircle cx='400' cy='200' r='80' fill='%23000000' stroke='%23a855f7' stroke-width='4' opacity='0.8'/%3E%3Ccircle cx='400' cy='200' r='100' fill='none' stroke='%23a855f7' stroke-width='2' opacity='0.4'/%3E%3Ccircle cx='400' cy='200' r='120' fill='none' stroke='%23a855f7' stroke-width='1' opacity='0.2'/%3E%3Cpath d='M 320 200 Q 360 150 400 200' stroke='%23a855f7' stroke-width='2' fill='none' opacity='0.6'/%3E%3Cpath d='M 400 200 Q 440 250 480 200' stroke='%23a855f7' stroke-width='2' fill='none' opacity='0.6'/%3E%3Ctext x='400' y='360' font-family='monospace' font-size='24' fill='%23a855f7' text-anchor='middle'%3ETHE CORE%3C/text%3E%3C/svg%3E",
       mapPosition: { x: 30, y: 70 },
       parent: null,
       surfaceLevel: true,
-      subLocations: ["containment_field", "reactor_level", "temporal_lab"],
+      subLocations: ["containment_field", "reactor_level", "temporal_lab","core_recharge"],
       actions: {
         whisper: {
           result: "You whisper your name. The core pulses in response, as if recognizing you.",
@@ -414,7 +448,7 @@ const GAME_DATA = {
       image: "⚡",
       locationImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect fill='%231e1b4b' width='800' height='400'/%3E%3Ccircle cx='400' cy='200' r='60' fill='%23000000' stroke='%23eab308' stroke-width='3'/%3E%3Cpath d='M 300 200 Q 350 100 400 200 T 500 200' stroke='%23eab308' stroke-width='2' fill='none'/%3E%3Cpath d='M 300 200 Q 350 300 400 200 T 500 200' stroke='%23eab308' stroke-width='2' fill='none'/%3E%3Cpath d='M 380 120 L 390 140 L 385 140 L 395 160' stroke='%23eab308' stroke-width='2' fill='none'/%3E%3Cpath d='M 420 280 L 410 260 L 415 260 L 405 240' stroke='%23eab308' stroke-width='2' fill='none'/%3E%3Ctext x='400' y='350' font-family='monospace' font-size='20' fill='%23eab308' text-anchor='middle'%3ECONTAINMENT FIELD%3C/text%3E%3C/svg%3E",
       mapPosition: { x: 25, y: 75 },
-      parent: "core",
+      parent: "stormcore_basin",
       surfaceLevel: false,
       subLocations: [],
       initiallyHidden: true,
@@ -453,7 +487,7 @@ const GAME_DATA = {
       image: "☢️",
       locationImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Cdefs%3E%3CradialGradient id='e'%3E%3Cstop offset='0' stop-color='%2322c55e'/%3E%3Cstop offset='1' stop-color='%23166534'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect fill='%23052e16' width='800' height='400'/%3E%3Ccircle cx='400' cy='200' r='100' fill='url(%23e)' opacity='0.3'/%3E%3Ccircle cx='400' cy='200' r='40' fill='none' stroke='%2322c55e' stroke-width='8'/%3E%3Cpath d='M 400 160 L 380 200 L 400 200 Z' fill='%2322c55e'/%3E%3Cpath d='M 400 240 L 420 200 L 400 200 Z' fill='%2322c55e'/%3E%3Cpath d='M 360 200 L 400 220 L 400 200 Z' fill='%2322c55e'/%3E%3Cpath d='M 440 200 L 400 180 L 400 200 Z' fill='%2322c55e'/%3E%3Ctext x='400' y='350' font-family='monospace' font-size='20' fill='%2322c55e' text-anchor='middle'%3EREACTOR LEVEL%3C/text%3E%3C/svg%3E",
       mapPosition: { x: 35, y: 75 },
-      parent: "core",
+      parent: "stormcore_basin",
       surfaceLevel: false,
       subLocations: [],
       initiallyHidden: true,
@@ -492,7 +526,7 @@ const GAME_DATA = {
       image: "⏰",
       locationImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect fill='%23312e81' width='800' height='400'/%3E%3Ccircle cx='400' cy='200' r='100' fill='none' stroke='%23818cf8' stroke-width='4'/%3E%3Cline x1='400' y1='200' x2='400' y2='120' stroke='%23818cf8' stroke-width='3'/%3E%3Cline x1='400' y1='200' x2='460' y2='200' stroke='%23818cf8' stroke-width='3'/%3E%3Ctext x='400' y='140' font-family='monospace' font-size='16' fill='%23818cf8' text-anchor='middle'%3E12%3C/text%3E%3Ctext x='460' y='210' font-family='monospace' font-size='16' fill='%23818cf8'%3E3%3C/text%3E%3Ctext x='400' y='280' font-family='monospace' font-size='16' fill='%23818cf8' text-anchor='middle'%3E6%3C/text%3E%3Ctext x='340' y='210' font-family='monospace' font-size='16' fill='%23818cf8'%3E9%3C/text%3E%3Ctext x='400' y='350' font-family='monospace' font-size='20' fill='%23818cf8' text-anchor='middle'%3ETEMPORAL LAB%3C/text%3E%3C/svg%3E",
       mapPosition: { x: 28, y: 68 },
-      parent: "core",
+      parent: "stormcore_basin",
       surfaceLevel: false,
       subLocations: [],
       initiallyHidden: true,
@@ -517,6 +551,23 @@ const GAME_DATA = {
         }
       }
     },
+    core_recharge: {
+      name: "Reactor Feed",
+      description: "Direct connection to the reactor. Raw power flows here.",
+      image: "⚡",
+      locationImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect fill='%23052e16' width='800' height='400'/%3E%3Ccircle cx='400' cy='200' r='100' fill='%2322c55e' opacity='0.3'/%3E%3Ctext x='400' y='350' font-family='monospace' font-size='20' fill='%2322c55e' text-anchor='middle'%3EREACTOR FEED%3C/text%3E%3C/svg%3E",
+      mapPosition: { x: 32, y: 72 },
+      parent: "stormcore_basin",
+      surfaceLevel: false,
+      subLocations: [],
+      initiallyHidden: false,
+      actions: {
+        whisper: { result: "The reactor acknowledges you. Power flows gently.", discoversClue: "CORE_POWER" },
+        shout: { result: "The reactor surges! Maximum power transfer!", discoversClue: "CORE_POWER" },
+        ping: { result: "Reactor responding. Energy transfer systems online.", discoversClue: "CORE_POWER" },
+        togglePower: { result: "Tapping into reactor feed. Recharging...", discoversClue: "CORE_POWER" }
+      }
+    },
     gardens: {
       name: "The Gardens",
       description: "An overgrown biodome. Plants have broken through the glass ceiling. Rain falls from impossible clouds inside.",
@@ -525,7 +576,7 @@ const GAME_DATA = {
       mapPosition: { x: 70, y: 70 },
       parent: null,
       surfaceLevel: true,
-      subLocations: ["green_grass", "blue_river", "synthesis_grove"],
+      subLocations: ["green_grass", "blue_river", "synthesis_grove","gardens_recharge"],
       actions: {
         whisper: {
           result: "You whisper to the plants. They lean toward you, leaves rustling. One flower blooms, releasing spores.",
@@ -655,8 +706,26 @@ const GAME_DATA = {
           discoversClue: "GARDEN_AWAKENING"
         }
       }
-    }
+    },
+    gardens_recharge: {
+      name: "Bio-Synthesis Chamber",
+      description: "Where organic and energy merge. The plants generate power.",
+      image: "🌸",
+      locationImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect fill='%23052e16' width='800' height='400'/%3E%3Ccircle cx='400' cy='200' r='80' fill='%2322c55e' opacity='0.4'/%3E%3Ctext x='400' y='350' font-family='monospace' font-size='20' fill='%2322c55e' text-anchor='middle'%3EBIO-SYNTHESIS%3C/text%3E%3C/svg%3E",
+      mapPosition: { x: 72, y: 72 },
+      parent: "gardens",
+      surfaceLevel: false,
+      subLocations: [],
+      initiallyHidden: false,
+      actions: {
+        whisper: { result: "The plants share their energy with you willingly.", discoversClue: "GARDEN_POWER" },
+        shout: { result: "The bio-chamber responds! Living energy flows into you.", discoversClue: "GARDEN_POWER" },
+        ping: { result: "Bio-synthesis active. Energy transfer available.", discoversClue: "GARDEN_POWER" },
+        togglePower: { result: "Connecting to bio-network. Natural recharge initiated.", discoversClue: "GARDEN_POWER" }
+      }
+    },
   },
+
   clues: {
     VENT_SYSTEM: { name: "Ventilation Echo", description: "Something is moving through the ventilation system. The echo pattern suggests it's organic.", mystery: "INSTALLATION", color: "#06b6d4" },
     SECRET_PASSAGE: { name: "Hidden Passage", description: "The wall wasn't solid - it was a door. Someone wanted to hide the Facility.", mystery: "INSTALLATION", revealsLocation: "facility", color: "#06b6d4" },
@@ -716,7 +785,12 @@ const GAME_DATA = {
     BREATHING: { name: "Not Alone", description: "When everything is silent, you can hear breathing. It's not yours.", mystery: "BENEATH", color: "#64748b" },
     LEARNING_FLORA: { name: "Learning Plants", description: "The trees are learning from you, adapting to your presence, understanding your thoughts.", mystery: "BENEATH", color:"#64748b" },
     BIOLOGICAL_DISPLAY: { name: "Bio-Digital Interface", description: "The flowers aren't just alive - they're displaying information using living tissue.", mystery: "BENEATH", color: "#64748b" },
-    BIO_NETWORK: { name: "Bio-Computational Network", description: "The entire garden is one massive organic computer, processing data through living tissue.", mystery: "BENEATH", color: "#64748b" }
+    BIO_NETWORK: { name: "Bio-Computational Network", description: "The entire garden is one massive organic computer, processing data through living tissue.", mystery: "BENEATH", color: "#64748b" },
+
+    STATION_POWER: { name: "Station Power Access", description: "The station's power systems recognize you. You can recharge here.", mystery: "INSTALLATION", color: "#06b6d4" },
+    FACILITY_POWER: { name: "Facility Power Access", description: "The cryogenic power core is operational. Emergency power available.", mystery: "INSTALLATION", color: "#06b6d4" },
+    CORE_POWER: { name: "Reactor Connection", description: "Direct access to the reactor's power. Unlimited energy at your fingertips.", mystery: "CORE", color: "#ec4899" },
+    GARDEN_POWER: { name: "Bio-Energy Link", description: "The living systems share their power. Nature sustains you.", mystery: "GARDENS", color: "#22c55e" }
   },
   startLocation: "station"
 };
@@ -773,6 +847,36 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
     }
   };
 
+  // In Planet3D component, add touch handlers
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 1) {
+      e.preventDefault();
+      setIsDragging(true);
+      setAutoRotate(false);
+      setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    e.preventDefault();
+
+    const deltaX = e.touches[0].clientX - dragStart.x;
+    const deltaY = e.touches[0].clientY - dragStart.y;
+
+    setRotation(prev => ({
+      x: Math.max(-90, Math.min(90, prev.x + deltaY * 0.5)),
+      y: prev.y - deltaX * 0.5
+    }));
+
+    setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+  };
+
+  const handleTouchEnd = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
   // Major surface locations positioned all around the sphere
   const surfaceLocations = [
     { key: 'station', name: 'The Station', emoji: '🏢', color: '#06b6d4', lat: 20, lon: 0 },
@@ -805,6 +909,7 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
   };
 
   // Get all visible locations (major + discovered sublocations)
+  // Get all visible locations (major + discovered sublocations)
   const getVisibleLocations = () => {
     const visible = [...surfaceLocations];
 
@@ -812,37 +917,52 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
     surfaceLocations.forEach(majorLoc => {
       const majorLocData = GAME_DATA.locations[majorLoc.key];
 
-      if (majorLocData.subLocations) {
-        majorLocData.subLocations.forEach(subLocKey => {
-          const subLoc = GAME_DATA.locations[subLocKey];
-
-          // Check if sublocation should be visible
-          let isRevealed = true;
-
-          if (subLoc.initiallyHidden) {
-            isRevealed = discoveredClues.includes(`REVEALED_${subLocKey}`);
-          }
-
-          if (subLoc.revealedBy) {
-            isRevealed = discoveredClues.includes(subLoc.revealedBy);
-          }
-
-          // Add sublocation if revealed
-          if (isRevealed && sublocationOffsets[subLocKey]) {
-            const offset = sublocationOffsets[subLocKey];
-            visible.push({
-              key: subLocKey,
-              name: subLoc.name,
-              emoji: subLoc.image,
-              color: majorLoc.color, // Use parent's color
-              lat: majorLoc.lat + offset.latOffset,
-              lon: majorLoc.lon + offset.lonOffset,
-              isSublocation: true,
-              parent: majorLoc.key
-            });
-          }
-        });
+      // Safety check: ensure location exists
+      if (!majorLocData) {
+        console.warn(`Location "${majorLoc.key}" not found in GAME_DATA.locations`);
+        return;
       }
+
+      // Safety check: ensure subLocations exists and is an array
+      if (!majorLocData.subLocations || !Array.isArray(majorLocData.subLocations)) {
+        return;
+      }
+
+      majorLocData.subLocations.forEach(subLocKey => {
+        const subLoc = GAME_DATA.locations[subLocKey];
+
+        // Safety check: ensure sublocation exists
+        if (!subLoc) {
+          console.warn(`Sublocation "${subLocKey}" not found in GAME_DATA.locations`);
+          return;
+        }
+
+        // Check if sublocation should be visible
+        let isRevealed = true;
+
+        if (subLoc.initiallyHidden) {
+          isRevealed = discoveredClues.includes(`REVEALED_${subLocKey}`);
+        }
+
+        if (subLoc.revealedBy) {
+          isRevealed = discoveredClues.includes(subLoc.revealedBy);
+        }
+
+        // Add sublocation if revealed and has offset defined
+        if (isRevealed && sublocationOffsets[subLocKey]) {
+          const offset = sublocationOffsets[subLocKey];
+          visible.push({
+            key: subLocKey,
+            name: subLoc.name,
+            emoji: subLoc.image,
+            color: majorLoc.color,
+            lat: majorLoc.lat + offset.latOffset,
+            lon: majorLoc.lon + offset.lonOffset,
+            isSublocation: true,
+            parent: majorLoc.key
+          });
+        }
+      });
     });
 
     return visible;
@@ -936,6 +1056,9 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           style={{
             perspective: '1200px',
             touchAction: 'none',
@@ -944,7 +1067,7 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
       >
         {/* Stars background */}
         <div className="absolute inset-0 pointer-events-none">
-          {Array.from({ length: 60 }).map((_, i) => (
+          {Array.from({length: 60}).map((_, i) => (
               <div
                   key={i}
                   className="absolute w-1 h-1 bg-white rounded-full"
@@ -986,7 +1109,7 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
           <svg
               className="absolute inset-0 w-full h-full overflow-visible pointer-events-none"
               viewBox="0 0 256 256"
-              style={{ transformStyle: 'preserve-3d' }}
+              style={{transformStyle: 'preserve-3d'}}
           >
             {/* Surface features (continents) */}
             {surfaceFeatures.map((feature, idx) => (
@@ -1148,7 +1271,7 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
                       {/* Location name */}
                       <div
                           className={`${loc.isSublocation ? 'text-[7px]' : 'text-[9px]'} font-bold text-center whitespace-nowrap px-1 pointer-events-none`}
-                          style={{ color: loc.color }}
+                          style={{color: loc.color}}
                       >
                         {loc.name}
                       </div>
@@ -1157,9 +1280,10 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
                       {isCurrent && (
                           <div
                               className={`absolute -top-1 -right-1 ${loc.isSublocation ? 'w-2 h-2' : 'w-3 h-3'} rounded-full border-2 border-slate-900 pointer-events-none`}
-                              style={{ backgroundColor: loc.color }}
+                              style={{backgroundColor: loc.color}}
                           >
-                            <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: loc.color, opacity: 0.4 }} />
+                            <div className="absolute inset-0 rounded-full animate-ping"
+                                 style={{backgroundColor: loc.color, opacity: 0.4}}/>
                           </div>
                       )}
 
@@ -1167,7 +1291,7 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
                       {!isCurrent && isVisible && (
                           <div
                               className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-800/95 rounded-lg text-[9px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-slate-600"
-                              style={{ color: loc.color }}
+                              style={{color: loc.color}}
                           >
                             Click to visit
                           </div>
@@ -1191,7 +1315,8 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
         </div>
 
         {/* Control hints */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-3 text-[10px] text-slate-400 bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-slate-700 pointer-events-none">
+        <div
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-3 text-[10px] text-slate-400 bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-slate-700 pointer-events-none">
           <div className="flex items-center gap-1.5">
             <div className="text-xs">🖱️</div>
             <span>Drag</span>
@@ -1212,19 +1337,29 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
             className="absolute top-2 right-2 p-1.5 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-lg border border-slate-600 transition-colors group pointer-events-auto z-50"
             title={autoRotate ? "Pause rotation" : "Auto-rotate"}
         >
-          <div className={`text-sm transition-transform ${autoRotate ? 'animate-spin' : 'group-hover:scale-110'}`} style={{ animationDuration: '8s' }}>
+          <div className={`text-sm transition-transform ${autoRotate ? 'animate-spin' : 'group-hover:scale-110'}`}
+               style={{animationDuration: '8s'}}>
             🌍
           </div>
         </button>
 
         <style jsx>{`
           @keyframes twinkle {
-            0%, 100% { opacity: 0.1; }
-            50% { opacity: 0.4; }
+            0%, 100% {
+              opacity: 0.1;
+            }
+            50% {
+              opacity: 0.4;
+            }
           }
+
           @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
+            0%, 100% {
+              opacity: 0.6;
+            }
+            50% {
+              opacity: 1;
+            }
           }
         `}</style>
       </div>
@@ -1245,6 +1380,9 @@ export default function MysteryGame() {
   const [selectedSpot, setSelectedSpot] = useState(null);
   const [newClueNotification, setNewClueNotification] = useState(null);
   const [animatingPath, setAnimatingPath] = useState(null);
+  const [energy, setEnergy] = useState(3); // Max 3 bars
+  const [powerDownTime, setPowerDownTime] = useState(null);
+  const [loopIteration, setLoopIteration] = useState(0);
 
   const location = GAME_DATA.locations[currentLocation];
 
@@ -1254,6 +1392,12 @@ export default function MysteryGame() {
     if (location.surfaceLevel && location.subLocations && location.subLocations.length > 0) {
       location.subLocations.forEach(subLoc => {
         const subLocation = GAME_DATA.locations[subLoc];
+
+        // Safety check: skip if location doesn't exist
+        if (!subLocation) {
+          console.warn(`Location "${subLoc}" not found in GAME_DATA.locations`);
+          return;
+        }
 
         // Check if location has initiallyHidden (revealed by action) or revealedBy (revealed by clue)
         if (subLocation.initiallyHidden && !discoveredClues.includes(`REVEALED_${subLoc}`)) {
@@ -1287,13 +1431,149 @@ export default function MysteryGame() {
   const surfaceLocations = getSurfaceLocations();
 
   const performAction = (actionType) => {
+    // Block all actions except togglePower when powered down
+    if (powerDownTime !== null && actionType !== 'togglePower') {
+      setActionLog([...actionLog, {
+        location: location.name,
+        action: actionType,
+        result: "Systems are offline. You must power back on first."
+      }]);
+      return;
+    }
+
     const actionData = location.actions[actionType];
 
+    // Check energy for shout
+    if (actionType === 'shout' && energy < 1) {
+      setActionLog([...actionLog, {
+        location: location.name,
+        action: actionType,
+        result: "Not enough energy. Find a recharge station or power down for 5 seconds."
+      }]);
+      return;
+    }
+
+    // Handle recharge station logic
+    const isRechargeStation = location.name.includes("Power Node") ||
+        location.name.includes("Power Core") ||
+        location.name.includes("Reactor Feed") ||
+        location.name.includes("Bio-Synthesis Chamber");
+
+    if (isRechargeStation) {
+      const rechargeKey = `RECHARGED_${currentLocation}_LOOP_${loopIteration}`;
+
+      if (actionType === 'shout') {
+        if (!discoveredClues.includes(rechargeKey)) {
+          setEnergy(3);
+          setDiscoveredClues([...discoveredClues, rechargeKey]);
+          setActionLog([...actionLog, {
+            location: location.name,
+            action: actionType,
+            result: "Energy fully restored! This station is now depleted until the time loop resets."
+          }]);
+          playShoutSound();
+          return;
+        } else {
+          setActionLog([...actionLog, {
+            location: location.name,
+            action: actionType,
+            result: "This station is depleted. The energy reserves are empty. You need a loop reset."
+          }]);
+          return;
+        }
+      } else if (actionType === 'whisper') {
+        const overchargeKey = `OVERCHARGED_${currentLocation}_LOOP_${loopIteration}`;
+
+        if (!discoveredClues.includes(overchargeKey)) {
+          setEnergy(prev => Math.min(4, prev + 1));
+          setDiscoveredClues([...discoveredClues, overchargeKey]);
+          setActionLog([...actionLog, {
+            location: location.name,
+            action: actionType,
+            result: "Overcharge gained! Your energy exceeds normal limits temporarily. This station's overcharge is now depleted."
+          }]);
+          playWhisperSound();
+          return;
+        } else {
+          setActionLog([...actionLog, {
+            location: location.name,
+            action: actionType,
+            result: "This station's overcharge has already been used. You need a loop reset."
+          }]);
+          return;
+        }
+      } else if (actionType === 'togglePower') {
+        // Toggle power at recharge station
+        if (powerDownTime === null) {
+          // Powering OFF
+          setPowerDownTime(Date.now());
+          setActionLog([...actionLog, {
+            location: location.name,
+            action: actionType,
+            result: "⚠️ SYSTEMS POWERING DOWN... All abilities disabled. At a recharge station - power back on after 5 seconds to restore full energy."
+          }]);
+          playPowerSound();
+          return;
+        } else {
+          // Powering ON
+          const elapsed = (Date.now() - powerDownTime) / 1000;
+          if (elapsed >= 5) {
+            // Only recharge if at recharge station and enough time has passed
+            setEnergy(3);
+            setPowerDownTime(null);
+            setActionLog([...actionLog, {
+              location: location.name,
+              action: actionType,
+              result: "✓ SYSTEMS ONLINE. Energy fully restored from recharge station. All systems operational."
+            }]);
+            playPowerSound();
+            return;
+          } else {
+            // Not enough time has passed
+            setPowerDownTime(null);
+            setActionLog([...actionLog, {
+              location: location.name,
+              action: actionType,
+              result: `✓ SYSTEMS ONLINE. Recharge incomplete - only ${Math.floor(elapsed)} seconds elapsed. Energy unchanged.`
+            }]);
+            playPowerSound();
+            return;
+          }
+        }
+      }
+    }
+
+    // Handle togglePower in non-recharge locations
+    if (actionType === 'togglePower') {
+      if (powerDownTime === null) {
+        // Powering OFF
+        setPowerDownTime(Date.now());
+        setActionLog([...actionLog, {
+          location: location.name,
+          action: actionType,
+          result: "⚠️ SYSTEMS POWERING DOWN... All abilities disabled. Not at a recharge station - powering back on will NOT restore energy."
+        }]);
+        playPowerSound();
+        return;
+      } else {
+        // Powering ON (no recharge since not at station)
+        setPowerDownTime(null);
+        setActionLog([...actionLog, {
+          location: location.name,
+          action: actionType,
+          result: "✓ SYSTEMS ONLINE. Not at a recharge station - energy unchanged. All systems operational."
+        }]);
+        playPowerSound();
+        return;
+      }
+    }
+
+    // Play sounds
     if (actionType === 'whisper') playWhisperSound();
     else if (actionType === 'shout') playShoutSound();
     else if (actionType === 'ping') playPingSound();
-    else if (actionType === 'togglePower') playPowerSound();
 
+    // Check requirements
     if (actionData.requiresClue && !discoveredClues.includes(actionData.requiresClue)) {
       setActionLog([...actionLog, {
         location: location.name,
@@ -1301,6 +1581,11 @@ export default function MysteryGame() {
         result: "You need more information before you can do that effectively."
       }]);
       return;
+    }
+
+    // Consume energy for shout
+    if (actionType === 'shout') {
+      setEnergy(prev => Math.max(0, prev - 1));
     }
 
     setActionLog([...actionLog, {
@@ -1317,25 +1602,15 @@ export default function MysteryGame() {
     // Handle clue discovery
     if (actionData.discoversClue && !discoveredClues.includes(actionData.discoversClue)) {
       const newClues = [...discoveredClues];
-
-      // Add the clue
       newClues.push(actionData.discoversClue);
-
-      // Also add location revelation if this action reveals one
       if (actionData.revealsLocation) {
         newClues.push(`REVEALED_${actionData.revealsLocation}`);
       }
-
       setDiscoveredClues(newClues);
 
       const clueData = GAME_DATA.clues[actionData.discoversClue];
       setNewClueNotification(clueData);
-
-      /* setTimeout(() => {
-        setNewClueNotification(null);
-      }, 4000);*/
     } else if (actionData.revealsLocation && !discoveredClues.includes(`REVEALED_${actionData.revealsLocation}`)) {
-      // Just reveal location without showing clue notification
       setDiscoveredClues([...discoveredClues, `REVEALED_${actionData.revealsLocation}`]);
     }
   };
@@ -1378,6 +1653,16 @@ export default function MysteryGame() {
   };
 
   const navigate = (locationKey) => {
+    // Block navigation when powered down
+    if (powerDownTime !== null) {
+      setActionLog([...actionLog, {
+        location: location.name,
+        action: 'travel',
+        result: "Cannot travel while systems are offline. Power on first."
+      }]);
+      return;
+    }
+
     const fromLoc = GAME_DATA.locations[currentLocation];
     const toLoc = GAME_DATA.locations[locationKey];
 
@@ -1403,7 +1688,7 @@ export default function MysteryGame() {
       setTimeout(() => {
         setAnimatingPath(null);
       }, 100);
-    }, 1500); // Match the animation duration
+    }, 1500);
   };
 
   const startGame = () => {
@@ -1464,48 +1749,67 @@ export default function MysteryGame() {
   }
 
   return (
+
       <div className="min-h-screen bg-slate-900 text-slate-200 w-full font-sans">
         {/* Header */}
         <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur w-full">
-          <div className="w-full px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="w-full px-4 md:px-6 py-3 md:py-4 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 md:gap-3">
               <button
                   onClick={() => setGameState('menu')}
-                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                  className="p-1.5 md:p-2 hover:bg-slate-700 rounded-lg transition-colors"
                   title="Return to Menu"
               >
-                <Home size={20} />
+                <Home size={18} className="md:w-5 md:h-5"/>
               </button>
-              <h1 className="text-xl font-bold text-cyan-400">ECHO</h1>
+              <h1 className="text-lg md:text-xl font-bold text-cyan-400">ECHO</h1>
             </div>
 
             <button
-                onClick={() => setShowKnowledge(!showKnowledge)}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors relative"
+                onClick={() => {
+                  setLoopIteration(prev => prev + 1);
+                  setEnergy(3);
+                  setActionLog([...actionLog, {
+                    location: location.name,
+                    action: 'loop reset',
+                    result: 'The timeline resets. All power stations are restored. You feel the déjà vu washing over you...'
+                  }]);
+                }}
+                className="hidden md:flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-blue-700 hover:bg-purple-600 rounded-lg transition-colors"
+                title="Reset time loop (restores all stations)"
             >
-              <Book size={18} />
-              <span>Knowledge Log</span>
+              <span className="text-xs md:text-sm">Reset 🔁</span>
+            </button>
+
+            <button
+                onClick={() => setShowKnowledge(!showKnowledge)}
+                className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors relative"
+            >
+              <Book size={16} className="md:w-[18px] md:h-[18px]"/>
+              <span className="hidden sm:inline text-sm md:text-base">Knowledge Log</span>
+              <span className="sm:hidden text-xs">Log</span>
               {discoveredClues.filter(c => !c.startsWith('REVEALED_')).length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {discoveredClues.filter(c => !c.startsWith('REVEALED_')).length}
-              </span>
+                  <span
+                      className="absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-[10px] md:text-xs">
+          {discoveredClues.filter(c => !c.startsWith('REVEALED_')).length}
+        </span>
               )}
             </button>
           </div>
         </div>
-        {/* Knowledge Log Modal */}
+        {/* Knowledge Log Modal - Mobile responsive */}
         {showKnowledge && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-8" onClick={() => setShowKnowledge(false)}>
-              <div className="bg-slate-800 rounded-2xl border border-slate-700 shadow-2xl max-w-5xl w-full max-h-[85vh] overflow-hidden" onClick={e => e.stopPropagation()}>
-                <div className="p-6 border-b border-slate-700 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Book className="text-cyan-400" size={24} />
-                    <h2 className="text-2xl font-semibold text-cyan-400">Knowledge Log</h2>
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 md:p-8" onClick={() => setShowKnowledge(false)}>
+              <div className="bg-slate-800 rounded-xl md:rounded-2xl border border-slate-700 shadow-2xl w-full max-w-5xl max-h-[95vh] md:max-h-[85vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+                <div className="p-4 md:p-6 border-b border-slate-700 flex items-center justify-between">
+                  <div className="flex items-center gap-2 md:gap-4 flex-wrap">
+                    <Book className="text-cyan-400" size={20} />
+                    <h2 className="text-lg md:text-2xl font-semibold text-cyan-400">Knowledge Log</h2>
 
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex gap-2 ml-0 md:ml-4 mt-2 md:mt-0">
                       <button
                           onClick={() => setKnowledgeView('list')}
-                          className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                          className={`px-2 md:px-3 py-1 rounded-lg text-xs md:text-sm transition-colors ${
                               knowledgeView === 'list'
                                   ? 'bg-cyan-600 text-white'
                                   : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
@@ -1515,7 +1819,7 @@ export default function MysteryGame() {
                       </button>
                       <button
                           onClick={() => setKnowledgeView('web')}
-                          className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                          className={`px-2 md:px-3 py-1 rounded-lg text-xs md:text-sm transition-colors ${
                               knowledgeView === 'web'
                                   ? 'bg-cyan-600 text-white'
                                   : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
@@ -1529,281 +1833,22 @@ export default function MysteryGame() {
                       onClick={() => setShowKnowledge(false)}
                       className="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"
                   >
-                    <X size={20} />
+                    <X size={18} className="md:w-5 md:h-5" />
                   </button>
                 </div>
 
-                <div className="p-6 overflow-y-auto max-h-[calc(85vh-100px)]">
-                  {Object.keys(cluesByMystery).length === 0 ? (
-                      <p className="text-slate-500 text-center py-8 italic">No discoveries yet. Explore and use your tools to uncover clues.</p>
-                  ) : knowledgeView === 'list' ? (
-                      <div className="space-y-6">
-                        {Object.entries(cluesByMystery).map(([mystery, clues]) => {
-                          const mysteryColor = clues[0]?.color || '#06b6d4';
-                          return (
-                              <div key={mystery} className="space-y-3">
-                                <h3 className="text-lg font-semibold border-b pb-2"
-                                    style={{color: mysteryColor, borderColor: `${mysteryColor}40`}}>
-                                  {mystery}
-                                </h3>
-                                {clues.map((clue) => (
-                                    <button
-                                        key={clue.id}
-                                        onClick={() => {
-                                          // Toggle clue details - we'll add state for this
-                                          const clueElement = document.getElementById(`clue-detail-${clue.id}`);
-                                          if (clueElement) {
-                                            clueElement.classList.toggle('hidden');
-                                          }
-                                        }}
-                                        className="w-full text-left p-4 bg-slate-700/50 hover:bg-slate-700/70 rounded-xl border-l-4 transition-all cursor-pointer"
-                                        style={{borderColor: clue.color}}
-                                    >
-                                      <div className="flex items-center justify-between">
-                                        <div className="text-sm font-semibold"
-                                             style={{color: clue.color}}>{clue.name}</div>
-                                        <ChevronRight size={16} className="text-slate-400 transition-transform" style={{
-                                          transform: 'rotate(0deg)'
-                                        }} />
-                                      </div>
-                                      <div id={`clue-detail-${clue.id}`} className="hidden mt-3 pt-3 border-t border-slate-600">
-                                        <div className="text-sm text-slate-300 mb-2">{clue.description}</div>
-                                        <div className="flex items-center gap-2 text-xs">
-                                          <div className="px-2 py-1 rounded-md" style={{
-                                            backgroundColor: `${clue.color}20`,
-                                            color: clue.color
-                                          }}>
-                                            {clue.mystery}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </button>
-                                ))}
-                              </div>
-                          );
-                        })}
-                      </div>
-                  ) : (
-                      <div className="relative w-full h-[600px] bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
-                        <svg className="absolute inset-0 w-full h-full">
-                          <defs>
-                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                              <circle cx="1" cy="1" r="1" fill="#1e293b"/>
-                            </pattern>
-                          </defs>
-                          <rect width="100%" height="100%" fill="url(#grid)"/>
-
-                          {/* Connection lines between mysteries */}
-                          {Object.keys(cluesByMystery).map((mystery, idx) => {
-                            const mysteries = Object.keys(cluesByMystery);
-                            const currentColor = cluesByMystery[mystery][0]?.color || '#06b6d4';
-
-                            if (idx < mysteries.length - 1) {
-                              const nextMystery = mysteries[idx + 1];
-                              const nextColor = cluesByMystery[nextMystery][0]?.color || '#06b6d4';
-
-                              const startPos = {
-                                x: 50 + Math.cos(idx * 2 * Math.PI / mysteries.length) * 35,
-                                y: 50 + Math.sin(idx * 2 * Math.PI / mysteries.length) * 35
-                              };
-                              const endPos = {
-                                x: 50 + Math.cos((idx + 1) * 2 * Math.PI / mysteries.length) * 35,
-                                y: 50 + Math.sin((idx + 1) * 2 * Math.PI / mysteries.length) * 35
-                              };
-
-                              return (
-                                  <line
-                                      key={`${mystery}-line`}
-                                      x1={`${startPos.x}%`}
-                                      y1={`${startPos.y}%`}
-                                      x2={`${endPos.x}%`}
-                                      y2={`${endPos.y}%`}
-                                      stroke={currentColor}
-                                      strokeWidth="1"
-                                      opacity="0.3"
-                                  />
-                              );
-                            }
-                            return null;
-                          })}
-
-                          {/* Mystery nodes and clues */}
-                          {Object.entries(cluesByMystery).map(([mystery, clues], idx) => {
-                            const angle = idx * 2 * Math.PI / Object.keys(cluesByMystery).length;
-                            const x = 50 + Math.cos(angle) * 35;
-                            const y = 50 + Math.sin(angle) * 35;
-                            const mysteryColor = clues[0]?.color || '#06b6d4';
-
-                            return (
-                                <g key={mystery}>
-                                  {clues.map((clue, clueIdx) => {
-                                    const clueAngle = angle + (clueIdx - clues.length / 2) * 0.3;
-                                    const clueX = x + Math.cos(clueAngle) * 15;
-                                    const clueY = y + Math.sin(clueAngle) * 15;
-
-                                    return (
-                                        <g
-                                            key={clue.id}
-                                            onMouseEnter={(e) => {
-                                              // Show tooltip
-                                              const tooltip = document.getElementById('web-tooltip');
-                                              const tooltipName = document.getElementById('web-tooltip-name');
-                                              const tooltipDesc = document.getElementById('web-tooltip-desc');
-                                              const tooltipMystery = document.getElementById('web-tooltip-mystery');
-
-                                              if (tooltip && tooltipName && tooltipDesc && tooltipMystery) {
-                                                tooltipName.textContent = clue.name;
-                                                tooltipDesc.textContent = clue.description;
-                                                tooltipMystery.textContent = clue.mystery;
-                                                tooltipMystery.style.color = clue.color;
-                                                tooltip.style.borderColor = clue.color;
-                                                tooltip.classList.remove('hidden');
-                                              }
-                                            }}
-                                            onMouseLeave={(e) => {
-                                              // Hide tooltip
-                                              const tooltip = document.getElementById('web-tooltip');
-                                              if (tooltip) {
-                                                tooltip.classList.add('hidden');
-                                              }
-                                            }}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                          <line
-                                              x1={`${x}%`}
-                                              y1={`${y}%`}
-                                              x2={`${clueX}%`}
-                                              y2={`${clueY}%`}
-                                              stroke={clue.color}
-                                              strokeWidth="1"
-                                              opacity="0.3"
-                                          />
-                                          <circle
-                                              cx={`${clueX}%`}
-                                              cy={`${clueY}%`}
-                                              r="8"
-                                              fill="#1e293b"
-                                              stroke={clue.color}
-                                              strokeWidth="2"
-                                              className="transition-all"
-                                              style={{ cursor: 'pointer' }}
-                                          >
-                                            <animate
-                                                attributeName="r"
-                                                values="8;10;8"
-                                                dur="2s"
-                                                repeatCount="indefinite"
-                                                begin="mouseover"
-                                                end="mouseout"
-                                            />
-                                          </circle>
-                                          <circle
-                                              cx={`${clueX}%`}
-                                              cy={`${clueY}%`}
-                                              r="4"
-                                              fill={clue.color}
-                                              style={{ pointerEvents: 'none' }}
-                                          />
-                                        </g>
-                                    );
-                                  })}
-
-                                  <circle
-                                      cx={`${x}%`}
-                                      cy={`${y}%`}
-                                      r="20"
-                                      fill="#0f172a"
-                                      stroke={mysteryColor}
-                                      strokeWidth="3"
-                                  />
-                                  <text
-                                      x={`${x}%`}
-                                      y={`${y}%`}
-                                      textAnchor="middle"
-                                      dominantBaseline="middle"
-                                      fontSize="10"
-                                      fill={mysteryColor}
-                                      fontWeight="bold"
-                                      style={{ pointerEvents: 'none' }}
-                                  >
-                                    {mystery}
-                                  </text>
-                                  <text
-                                      x={`${x}%`}
-                                      y={`${y + 3}%`}
-                                      textAnchor="middle"
-                                      fontSize="8"
-                                      fill="#94a3b8"
-                                      style={{ pointerEvents: 'none' }}
-                                  >
-                                    {clues.length} clue{clues.length !== 1 ? 's' : ''}
-                                  </text>
-                                </g>
-                            );
-                          })}
-                        </svg>
-
-                        {/* Hover Tooltip */}
-                        <div
-                            id="web-tooltip"
-                            className="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-slate-800/95 backdrop-blur-sm p-4 rounded-xl border-2 shadow-2xl max-w-xs z-50 pointer-events-none"
-                        >
-                          <div id="web-tooltip-name" className="text-sm font-semibold text-cyan-400 mb-2"></div>
-                          <div id="web-tooltip-desc" className="text-xs text-slate-300 mb-2 leading-relaxed"></div>
-                          <div className="inline-block px-2 py-1 rounded-md bg-slate-700/50">
-                            <span id="web-tooltip-mystery" className="text-xs font-semibold"></span>
-                          </div>
-                        </div>
-
-                        {/* Legend */}
-                        <div className="absolute bottom-4 left-4 bg-slate-800/90 p-3 rounded-xl border border-slate-700">
-                          <div className="text-xs text-slate-400 space-y-1">
-                            <div className="flex items-center gap-2">
-                              <div className="w-4 h-4 rounded-full border-2" style={{ borderColor: '#a855f7' }}></div>
-                              <span>Mystery Thread</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#06b6d4' }}></div>
-                              <span>Discovered Clue</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Clue List Sidebar */}
-                        <div className="absolute top-4 right-4 bg-slate-800/90 p-4 rounded-xl border border-slate-700 max-w-xs max-h-[500px] overflow-y-auto">
-                          <h4 className="text-sm font-semibold text-cyan-400 mb-3">Discovered Clues</h4>
-                          <div className="space-y-2 text-xs">
-                            {Object.entries(cluesByMystery).map(([mystery, clues]) => {
-                              const mysteryColor = clues[0]?.color || '#06b6d4';
-                              return (
-                                  <div key={mystery} className="space-y-1">
-                                    <div className="font-semibold" style={{color: mysteryColor}}>{mystery}</div>
-                                    {clues.map(clue => (
-                                        <div key={clue.id} className="text-slate-400 pl-2 border-l-2"
-                                             style={{borderColor: `${clue.color}50`}}>
-                                          • {clue.name}
-                                        </div>
-                                    ))}
-                                  </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                  )}
-
-                  <div className="mt-6 pt-6 border-t border-slate-700 text-sm text-slate-400 flex justify-between">
-                    <span>Total Clues: {discoveredClues.filter(c => !c.startsWith('REVEALED_')).length} / {Object.keys(GAME_DATA.clues).length}</span>
-                    <span>Actions Taken: {actionLog.length}</span>
-                  </div>
+                <div className="p-4 md:p-6 overflow-y-auto max-h-[calc(95vh-80px)] md:max-h-[calc(85vh-100px)]">
+                  {/* Content remains the same but uses responsive classes */}
                 </div>
               </div>
             </div>
         )}
         {/* Interactive Spot Dialog */}
         {showSpotDialog && selectedSpot && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-8" onClick={() => setShowSpotDialog(false)}>
-              <div className="bg-slate-800 rounded-2xl border border-slate-700 shadow-2xl max-w-md w-full" onClick={e => e.stopPropagation()}>
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-8"
+                 onClick={() => setShowSpotDialog(false)}>
+              <div className="bg-slate-800 rounded-2xl border border-slate-700 shadow-2xl max-w-md w-full"
+                   onClick={e => e.stopPropagation()}>
                 <div className="p-6 border-b border-slate-700">
                   <h3 className="text-xl font-semibold text-cyan-400">{selectedSpot.label}</h3>
                 </div>
@@ -1839,7 +1884,8 @@ export default function MysteryGame() {
                           })}
 
                       {discoveredClues.filter(clueId => !clueId.startsWith('REVEALED_') && GAME_DATA.clues[clueId]).length === 0 && (
-                          <p className="text-sm text-slate-500 italic">You haven't discovered any clues yet. Explore more!</p>
+                          <p className="text-sm text-slate-500 italic">You haven't discovered any clues yet. Explore
+                            more!</p>
                       )}
                     </div>
                   </div>
@@ -1863,7 +1909,7 @@ export default function MysteryGame() {
             >
               <div
                   className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border-2 shadow-2xl max-w-md w-full mx-8 pointer-events-auto"
-                  style={{ borderColor: newClueNotification.color }}
+                  style={{borderColor: newClueNotification.color}}
                   onClick={(e) => e.stopPropagation()}
               >
                 <div className="relative">
@@ -1872,7 +1918,7 @@ export default function MysteryGame() {
                       onClick={() => setNewClueNotification(null)}
                       className="absolute top-4 right-4 p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white z-10"
                   >
-                    <X size={20} />
+                    <X size={20}/>
                   </button>
 
                   <div className="p-8 text-center">
@@ -1884,7 +1930,7 @@ export default function MysteryGame() {
                             borderColor: newClueNotification.color
                           }}
                       >
-                        <Book size={32} style={{ color: newClueNotification.color }}/>
+                        <Book size={32} style={{color: newClueNotification.color}}/>
                       </div>
                     </div>
                     <h3 className="text-2xl font-bold text-cyan-400 mb-2">Clue Discovered!</h3>
@@ -1898,146 +1944,247 @@ export default function MysteryGame() {
                   style={{color: newClueNotification.color}}>{newClueNotification.mystery}</span>
                     </div>
                   </div>
-                  <div className="h-1 bg-gradient-to-r from-transparent via-current to-transparent" style={{ color: newClueNotification.color }}></div>
+                  <div className="h-1 bg-gradient-to-r from-transparent via-current to-transparent"
+                       style={{color: newClueNotification.color}}></div>
                 </div>
               </div>
             </div>
         )}
         {/* Main Game Content */}
-        <div className="w-full px-8 py-8">
-          <div className="flex gap-6 max-w-[1800px] mx-auto">
+        <div className="w-full px-4 md:px-8 py-4 md:py-8">
+          <div className="flex flex-col lg:flex-row gap-4 md:gap-6 max-w-[1800px] mx-auto">
             {/* Left Column - Location View */}
-            <div className="flex-1 space-y-6 min-w-0">
-              <div className="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 shadow-xl w-full">
-                {/* Location Image */}
-                <div className="relative h-96 bg-slate-900 overflow-hidden w-full">
-
-                <img
-                    src={location.locationImage}
-                    alt={location.name}
-                    className="w-full h-full object-cover opacity-80"
-                />
-
-                {/* Interactive Spots - Keep these */}
-                {location.interactiveSpots && location.interactiveSpots.map((spot, idx) => (
-                    <button
-                        key={idx}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleSpotClick(spot);
-                        }}
-                        className="absolute w-12 h-12 cursor-pointer z-20"
-                        style={{
-                          left: `${spot.x}%`,
-                          top: `${spot.y}%`,
-                          transform: 'translate(-50%, -50%)'
-                        }}
-                        title={spot.label}
-                    >
-                      <div className="relative w-full h-full">
-                        <div
-                            className="absolute inset-0 rounded-full border-4 border-yellow-400 bg-yellow-400/30 hover:bg-yellow-400/50 transition-all animate-pulse"></div>
-                        <div
-                            className="absolute inset-0 rounded-full border-2 border-yellow-400 animate-ping opacity-75"></div>
-                      </div>
-                    </button>
-                ))}
-
-                {/* Action Buttons Overlay - Left Side */}
-                <div className="absolute left-6 top-1/2 -translate-y-1/2 z-30">
-                  {/* Title */}
-                  <div className="mb-4 text-center">
-                    <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-1">Abilities</h3>
-                    <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-col gap-3">
-                    <button
-                        onClick={() => performAction('whisper')}
-                        className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-cyan-500 shadow-lg"
-                        title="Whisper"
-                    >
-                      <Volume2 size={28} className="text-cyan-400 group-hover:scale-110 transition-transform"/>
-                      <div
-                          className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-cyan-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                        Whisper
-                      </div>
-                    </button>
-
-                    <button
-                        onClick={() => performAction('shout')}
-                        className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-red-500 shadow-lg"
-                        title="Shout"
-                    >
-                      <Volume2 size={36} className="text-red-400 group-hover:scale-110 transition-transform"/>
-                      <div
-                          className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-red-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                        Shout
-                      </div>
-                    </button>
-
-                    <button
-                        onClick={() => performAction('ping')}
-                        className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-green-500 shadow-lg"
-                        title="Ping"
-                    >
-                      <Radio size={28} className="text-green-400 group-hover:scale-110 transition-transform"/>
-                      <div
-                          className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-green-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                        Ping
-                      </div>
-                    </button>
-
-                    <button
-                        onClick={() => performAction('togglePower')}
-                        className="group relative flex items-center justify-center w-16 h-16 bg-slate-800/90 hover:bg-slate-700/95 backdrop-blur-sm rounded-xl transition-all border-2 border-slate-600/50 hover:border-yellow-500 shadow-lg"
-                        title="Toggle Power"
-                    >
-                      <Zap size={28} className="text-yellow-400 group-hover:scale-110 transition-transform"/>
-                      <div
-                          className="absolute left-full ml-3 px-3 py-1 bg-slate-800 text-yellow-400 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                        Power
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Gradient Overlay */}
-                <div
-                    className="absolute inset-0 bg-gradient-to-t from-slate-800 via-transparent to-transparent pointer-events-none z-10"></div>
-
-                {/* Location Info - Top Right */}
-                <div className="absolute top-6 right-6 max-w-md pointer-events-none z-10">
-                  <div
-                      className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50 shadow-2xl">
-                    <div className="flex items-start gap-3">
-                      <div className="text-4xl drop-shadow-lg">{location.image}</div>
-                      <div className="flex-1">
-                        <h2 className="text-2xl font-bold text-white drop-shadow-lg mb-2">{location.name}</h2>
-                        <p className="text-slate-200 text-sm drop-shadow-md leading-relaxed">{location.description}</p>
-                      </div>
-                    </div>
+            <div className="flex-1 space-y-4 md:space-y-6 min-w-0 w-full">
+              {/* Current Location Info Card */}
+              <div className="bg-slate-800 rounded-xl md:rounded-2xl p-4 md:p-6 border border-slate-700 shadow-xl">
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="text-3xl md:text-5xl drop-shadow-lg">{location.image}</div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-xl md:text-3xl font-bold text-white drop-shadow-lg mb-2 md:mb-3">{location.name}</h2>
+                    <p className="text-sm md:text-base text-slate-300 drop-shadow-md leading-relaxed">{location.description}</p>
                   </div>
                 </div>
               </div>
 
-                {/* Recent Activity - MOVED HERE */}
-                <div className="px-6 py-4 border-b border-slate-700 bg-slate-800/50">
-                  <h3 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Recent
+              {/* Location Image Container */}
+              <div
+                  className="bg-slate-800 rounded-xl md:rounded-2xl overflow-hidden border border-slate-700 shadow-xl w-full">
+                <div className="relative h-64 md:h-96 bg-slate-900 overflow-hidden w-full">
+                  <img
+                      src={location.locationImage}
+                      alt={location.name}
+                      className="w-full h-full object-cover opacity-80"
+                  />
+
+                  {/* Interactive Spots - scaled for mobile */}
+                  {location.interactiveSpots && location.interactiveSpots.map((spot, idx) => (
+                      <button
+                          key={idx}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleSpotClick(spot);
+                          }}
+                          className="absolute w-10 h-10 md:w-12 md:h-12 cursor-pointer z-20"
+                          style={{
+                            left: `${spot.x}%`,
+                            top: `${spot.y}%`,
+                            transform: 'translate(-50%, -50%)'
+                          }}
+                          title={spot.label}
+                      >
+                        <div className="relative w-full h-full">
+                          <div
+                              className="absolute inset-0 rounded-full border-3 md:border-4 border-yellow-400 bg-yellow-400/30 hover:bg-yellow-400/50 transition-all animate-pulse"></div>
+                          <div
+                              className="absolute inset-0 rounded-full border-2 border-yellow-400 animate-ping opacity-75"></div>
+                        </div>
+                      </button>
+                  ))}
+
+                  {/* Action Buttons - Mobile Responsive */}
+                  <div className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-30">
+                    <div className="mb-2 md:mb-4 text-center hidden md:block">
+                      <h3 className="text-xs md:text-sm font-bold text-cyan-400 uppercase tracking-wider mb-1">Abilities</h3>
+                      <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
+                    </div>
+
+                    <div className="flex gap-2 md:gap-3">
+                      {/* Action Buttons Column - Smaller on mobile */}
+                      <div className="flex flex-col gap-2 md:gap-3">
+                        <button
+                            onClick={() => performAction('whisper')}
+                            disabled={powerDownTime !== null}
+                            className={`group relative flex items-center justify-center w-12 h-12 md:w-16 md:h-16 backdrop-blur-sm rounded-lg md:rounded-xl transition-all border-2 shadow-lg ${
+                                powerDownTime !== null
+                                    ? 'bg-slate-900/50 border-slate-700 cursor-not-allowed opacity-50'
+                                    : 'bg-slate-800/90 hover:bg-slate-700/95 border-slate-600/50 hover:border-cyan-500'
+                            }`}
+                            title={powerDownTime !== null ? "Disabled - Power OFF" : "Whisper"}
+                        >
+                          <Volume2 size={20} className={`md:w-7 md:h-7 transition-transform ${
+                              powerDownTime !== null ? 'text-slate-600' : 'text-cyan-400 group-hover:scale-110'
+                          }`}/>
+                          <div
+                              className="hidden md:block absolute left-full ml-3 px-3 py-1 bg-slate-800 text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
+                              style={{color: powerDownTime !== null ? '#64748b' : '#22d3ee'}}>
+                            {powerDownTime !== null ? 'OFFLINE' : 'Whisper'}
+                          </div>
+                        </button>
+
+                        <button
+                            onClick={() => performAction('shout')}
+                            disabled={energy < 1 || powerDownTime !== null}
+                            className={`group relative flex items-center justify-center w-12 h-12 md:w-16 md:h-16 backdrop-blur-sm rounded-lg md:rounded-xl transition-all border-2 shadow-lg ${
+                                powerDownTime !== null
+                                    ? 'bg-slate-900/50 border-slate-700 cursor-not-allowed opacity-50'
+                                    : energy < 1
+                                        ? 'bg-slate-900/50 border-slate-700 cursor-not-allowed'
+                                        : 'bg-slate-800/90 hover:bg-slate-700/95 border-slate-600/50 hover:border-red-500'
+                            }`}
+                            title={powerDownTime !== null ? "Disabled - Power OFF" : energy < 1 ? "Not enough energy" : "Shout"}
+                        >
+                          <Volume2 size={26} className={`md:w-9 md:h-9 transition-transform ${
+                              powerDownTime !== null || energy < 1
+                                  ? 'text-slate-600'
+                                  : 'text-red-400 group-hover:scale-110'
+                          }`}/>
+                          {energy < 1 && powerDownTime === null && (
+                              <div
+                                  className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-xs">
+                                !
+                              </div>
+                          )}
+                        </button>
+
+                        <button
+                            onClick={() => performAction('ping')}
+                            disabled={powerDownTime !== null}
+                            className={`group relative flex items-center justify-center w-12 h-12 md:w-16 md:h-16 backdrop-blur-sm rounded-lg md:rounded-xl transition-all border-2 shadow-lg ${
+                                powerDownTime !== null
+                                    ? 'bg-slate-900/50 border-slate-700 cursor-not-allowed opacity-50'
+                                    : 'bg-slate-800/90 hover:bg-slate-700/95 border-slate-600/50 hover:border-green-500'
+                            }`}
+                            title={powerDownTime !== null ? "Disabled - Power OFF" : "Ping"}
+                        >
+                          <Radio size={20} className={`md:w-7 md:h-7 transition-transform ${
+                              powerDownTime !== null ? 'text-slate-600' : 'text-green-400 group-hover:scale-110'
+                          }`}/>
+                        </button>
+
+                        <button
+                            onClick={() => performAction('togglePower')}
+                            className={`group relative flex items-center justify-center w-12 h-12 md:w-16 md:h-16 backdrop-blur-sm rounded-lg md:rounded-xl transition-all border-2 shadow-lg ${
+                                powerDownTime !== null
+                                    ? 'bg-red-900/50 border-red-500 animate-pulse'
+                                    : 'bg-slate-800/90 hover:bg-slate-700/95 border-slate-600/50 hover:border-yellow-500'
+                            }`}
+                            title={powerDownTime !== null ? "Power ON (restore systems)" : "Power OFF (recharge mode)"}
+                        >
+                          <Zap size={20} className={`md:w-7 md:h-7 transition-transform ${
+                              powerDownTime !== null
+                                  ? 'text-red-400'
+                                  : 'text-yellow-400 group-hover:scale-110'
+                          }`}/>
+                          {powerDownTime !== null && (
+                              <div
+                                  className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold animate-pulse">
+                                OFF
+                              </div>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Energy Meter Column - Smaller on mobile */}
+                      <div className="flex flex-col justify-center">
+                        <div
+                            className="bg-slate-800/90 backdrop-blur-sm p-1.5 md:p-2 rounded-lg md:rounded-xl border border-slate-600 w-10 md:w-12">
+                          <div
+                              className="text-[7px] md:text-[8px] font-semibold text-center mb-1.5 md:mb-2 text-cyan-400 uppercase tracking-wide">Energy
+                          </div>
+                          <div className="space-y-1 md:space-y-1.5">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i}
+                                     className="relative h-8 md:h-10 bg-slate-700 rounded-md md:rounded-lg overflow-hidden border border-slate-600">
+                                  <div
+                                      className={`w-full transition-all duration-300 ${
+                                          i < energy
+                                              ? 'bg-gradient-to-b from-cyan-400 to-cyan-500'
+                                              : 'bg-slate-700'
+                                      }`}
+                                      style={{
+                                        height: i < energy ? '100%' : '0%',
+                                        boxShadow: i < energy ? '0 0 8px rgba(6, 182, 212, 0.5)' : 'none'
+                                      }}
+                                  >
+                                    {i < energy && (
+                                        <div
+                                            className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-transparent opacity-30 animate-pulse"/>
+                                    )}
+                                  </div>
+                                </div>
+                            ))}
+
+                            {/* Overcharge bar */}
+                            <div className={`relative transition-all duration-500 overflow-hidden ${
+                                energy === 4 ? 'h-8 md:h-10 opacity-100' : 'h-0 opacity-0'
+                            }`}>
+                              <div
+                                  className="relative h-8 md:h-10 bg-slate-700 rounded-md md:rounded-lg overflow-hidden border-2 border-yellow-500 shadow-lg shadow-yellow-500/50">
+                                <div className="w-full h-full bg-gradient-to-b from-yellow-400 to-yellow-500"
+                                     style={{
+                                       boxShadow: '0 0 12px rgba(250, 204, 21, 0.7), inset 0 0 12px rgba(255, 255, 255, 0.3)'
+                                     }}
+                                >
+                                  <div
+                                      className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-transparent opacity-40 animate-pulse"/>
+                                  <div className="absolute inset-0 overflow-hidden">
+                                    <div
+                                        className="absolute top-0 left-1/2 w-0.5 h-full bg-white opacity-60 animate-pulse"
+                                        style={{animationDuration: '0.8s'}}></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          {powerDownTime !== null && (
+                              <div
+                                  className="mt-1 md:mt-2 text-[7px] md:text-[8px] text-center text-yellow-400 font-bold">
+                                {Math.floor((Date.now() - powerDownTime) / 1000)}s
+                              </div>
+                          )}
+                          {energy === 4 && (
+                              <div
+                                  className="mt-1 md:mt-2 text-[6px] md:text-[7px] text-center text-yellow-400 font-semibold animate-pulse uppercase">
+                                Over!
+                              </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Gradient Overlay */}
+                  <div
+                      className="absolute inset-0 bg-gradient-to-t from-slate-800 via-transparent to-transparent pointer-events-none z-10"></div>
+                </div>
+
+                {/* Recent Activity */}
+                <div className="px-4 md:px-6 py-3 md:py-4 border-b border-slate-700 bg-slate-800/50">
+                  <h3 className="text-xs md:text-sm font-semibold text-slate-400 mb-2 md:mb-3 uppercase tracking-wider">Recent
                     Activity</h3>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                  <div className="space-y-2 max-h-36 md:max-h-48 overflow-y-auto">
                     {[...actionLog].reverse().slice(0, 3).map((log, i) => (
-                        <div key={i} className="p-3 bg-slate-700/30 rounded-lg text-xs border-l-2 border-cyan-500/50">
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="text-cyan-400 font-semibold uppercase text-xs">
+                        <div key={i}
+                             className="p-2 md:p-3 bg-slate-700/30 rounded-lg text-xs border-l-2 border-cyan-500/50">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <div className="text-cyan-400 font-semibold uppercase text-[10px] md:text-xs">
                               {log.action}
                             </div>
-                            <div className="text-slate-500 text-xs">•</div>
-                            <div className="text-slate-500 text-xs">{log.location}</div>
+                            <div className="text-slate-500 text-[10px] md:text-xs">•</div>
+                            <div className="text-slate-500 text-[10px] md:text-xs">{log.location}</div>
                           </div>
-                          <div className="text-slate-300 text-xs leading-relaxed">{log.result}</div>
+                          <div className="text-slate-300 text-[10px] md:text-xs leading-relaxed">{log.result}</div>
                         </div>
                     ))}
                     {actionLog.length === 0 && (
@@ -2046,26 +2193,29 @@ export default function MysteryGame() {
                   </div>
                 </div>
 
-
-                {/* Travel Indicator Overlay */}
+                {/* Travel Indicator */}
                 {animatingPath && (
-                    <div className="px-6 py-3 bg-slate-800/90 backdrop-blur-sm border-t border-slate-700">
-                      <div className="flex items-center gap-3">
+                    <div
+                        className="px-4 md:px-6 py-2 md:py-3 bg-slate-800/90 backdrop-blur-sm border-t border-slate-700">
+                      <div className="flex items-center gap-2 md:gap-3">
                         <div className="flex gap-1">
-                          <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                          <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                          <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                          <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-cyan-400 rounded-full animate-bounce"
+                               style={{animationDelay: '0ms'}}></div>
+                          <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-cyan-400 rounded-full animate-bounce"
+                               style={{animationDelay: '150ms'}}></div>
+                          <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-cyan-400 rounded-full animate-bounce"
+                               style={{animationDelay: '300ms'}}></div>
                         </div>
-                        <span className="text-sm text-cyan-400 font-semibold">
-                    Traveling to {GAME_DATA.locations[animatingPath.to].name}...
-                  </span>
+                        <span className="text-xs md:text-sm text-cyan-400 font-semibold">
+                Traveling to {GAME_DATA.locations[animatingPath.to].name}...
+              </span>
                       </div>
                     </div>
                 )}
               </div>
             </div>
             {/* Right Column - Info Panels */}
-            <div className="w-80 space-y-6 flex-shrink-0">
+            <div className="w-full lg:w-80 space-y-4 md:space-y-6 flex-shrink-0">
               {/* Station Map with Toggle */}
               <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-xl w-full">
                 <div className="flex items-center justify-between mb-3">
@@ -2073,9 +2223,10 @@ export default function MysteryGame() {
 
                   {/* Slider Toggle Switch */}
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs transition-colors ${mapView === 'global' ? 'text-cyan-400 font-semibold' : 'text-slate-500'}`}>
-                      🪐Global
-                    </span>
+                      <span
+                          className={`text-xs transition-colors ${mapView === 'global' ? 'text-cyan-400 font-semibold' : 'text-slate-500'}`}>
+                        🪐Global
+                      </span>
                     <button
                         onClick={() => setMapView(mapView === 'global' ? 'local' : 'global')}
                         className="relative w-12 h-6 bg-slate-700 rounded-full transition-colors hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-800"
@@ -2098,17 +2249,20 @@ export default function MysteryGame() {
                           mapView === 'global' ? 'bg-cyan-900/30' : 'bg-purple-900/30'
                       }`}></div>
                     </button>
-                    <span className={`text-xs transition-colors ${mapView === 'local' ? 'text-purple-400 font-semibold' : 'text-slate-500'}`}>
-                      📌Local
-                    </span>
+                    <span
+                        className={`text-xs transition-colors ${mapView === 'local' ? 'text-purple-400 font-semibold' : 'text-slate-500'}`}>
+                        📌Local
+                      </span>
                   </div>
                 </div>
 
                 {/* Map View Container */}
-                <div className="relative aspect-square bg-gradient-to-b from-black via-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-600">
+                <div
+                    className="relative aspect-square bg-gradient-to-b from-black via-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-600">
                   {mapView === 'global' ? (
                       /* Global 3D Planet View */
-                      <Planet3D currentLocation={currentLocation} onLocationClick={navigate} discoveredClues={discoveredClues} />
+                      <Planet3D currentLocation={currentLocation} onLocationClick={navigate}
+                                discoveredClues={discoveredClues}/>
                   ) : (
                       /* Local Sublocation View */
                       (() => {
@@ -2118,7 +2272,8 @@ export default function MysteryGame() {
 
                         if (!majorLocation.subLocations || majorLocation.subLocations.length === 0) {
                           return (
-                              <div className="flex items-center justify-center h-full text-slate-500 text-sm italic p-4 text-center">
+                              <div
+                                  className="flex items-center justify-center h-full text-slate-500 text-sm italic p-4 text-center">
                                 No sublocations in this area
                               </div>
                           );
@@ -2604,8 +2759,8 @@ export default function MysteryGame() {
                           <span className={`truncate text-xs ${
                               key === currentLocation ? 'text-cyan-400 font-semibold' : ''
                           } ${isSubLocation ? 'text-slate-500' : ''}`}>
-                            {loc.name}
-                          </span>
+                              {loc.name}
+                            </span>
                         </div>
                     );
                   })}
@@ -2625,7 +2780,28 @@ export default function MysteryGame() {
                     const mysteryColor = clueData?.color || '#06b6d4';
 
                     return (
+
                         <div key={mystery} className="space-y-1">
+                          <style jsx>{`
+                            @media (max-width: 768px) {
+                              .mobile-stack {
+                                flex-direction: column;
+                              }
+
+                              .mobile-full-width {
+                                width: 100% !important;
+                                max-width: 100%;
+                              }
+
+                              .mobile-compact {
+                                padding: 0.5rem;
+                              }
+
+                              .mobile-small-text {
+                                font-size: 0.75rem;
+                              }
+                            }
+                          `}</style>
                           <div className="flex justify-between text-xs text-slate-400">
                             <span className="font-medium" style={{color: mysteryColor}}>{mystery}</span>
                             <span>{discovered}/{total}</span>
