@@ -154,7 +154,7 @@ function RoleCard({ role, expanded, onToggle }: { role: Role; expanded: boolean;
 
                     <figure style={{ margin: 0 }}>
                         <img
-                            src="/img/OmnivoresRule_ArmorDissolve_16x9.png"
+                            src="img/armor-dissolve.jpg"
                             alt="Gameplay screenshot: a skeletal android figure outlined in white floats before a large circular disc, beside a bare branching tree."
                             loading="lazy"
                             style={{ display: 'block', width: '100%', height: 'auto', borderRadius: 8, border: '1px solid #334155' }}

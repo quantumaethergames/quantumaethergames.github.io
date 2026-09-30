@@ -72,7 +72,7 @@ export const roles: Role[] = [
         type: 'Contract, part-time',
         location: 'Remote',
         summary:
-            'Help define the visual world of Omnivores Rule: concept art for 10 distinct levels, from creature design to landscape and atmosphere.',
+            'Help define the visual world of Omnivores Rule: concept art for 4-7 distinct areas + ecosystems, from creature design to landscape and atmosphere.',
         details: [
             { label: 'Rate', value: '$1,500–$2,000/month' },
             { label: 'Duration', value: '4–5 months, start Nov/Dec 2026, end March/April 2027' },
@@ -89,7 +89,7 @@ export const roles: Role[] = [
         requirements: [
             'Strong portfolio in concept art/illustration, ideally with experience in games or animation.',
             'Experience illustrating non-traditional body structures (3 legs, 7 arms, 15 joints, gyroscopic torsos, etc.',
-            'Comfortable working in a hand-drawn or painterly style (Moebius, Miyazaki (Ghibli), Green Street Pictures (Scavengers Reign), or similar sensibilities a plus).',
+            'Comfortable working in a hand-drawn or painterly style (Moebius, Miyazaki (Ghibli), Green Street Pictures (Scavengers Reign, Common Side Effects), or similar sensibilities a plus).',
             'Interest in ecological, sci-fi, or Indigenous-futurist visual storytelling.',
             'Able to work independently against a production schedule and take direction well.',
         ],
