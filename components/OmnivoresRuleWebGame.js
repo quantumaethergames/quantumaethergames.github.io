@@ -117,7 +117,8 @@ const GAME_DATA = {
         },
         togglePower: {
           result: "The power fluctuates. Lights flicker on briefly, revealing scrawled messages on the walls: 'THEY'RE LISTENING'. You also notice a sealed door marked 'ARCHIVE' - now unlocked.",
-          discoversClue: "WARNING_MESSAGE"
+          discoversClue: "WARNING_MESSAGE",
+          revealsLocation: "hidden_archive"
         }
       }
     },
@@ -281,7 +282,8 @@ const GAME_DATA = {
         },
         togglePower: {
           result: "The southern wall slides open - a passage to the Core chamber. How did you know where to look?",
-          discoversClue: "CORE_PASSAGE"
+          discoversClue: "CORE_PASSAGE",
+          revealsLocation: "stormcore_basin"
         }
       }
     },
@@ -413,10 +415,10 @@ const GAME_DATA = {
       }
     },
     stormcore_basin: {
-      name: "stormcore_basin",
+      name: "Stormcore Basin",
       description: "The heart of the installation. A massive sphere of dark matter pulses irregularly.",
       image: "⚫",
-      locationImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect fill='%230a0a0a' width='800' height='400'/%3E%3Ccircle cx='400' cy='200' r='80' fill='%23000000' stroke='%23a855f7' stroke-width='4' opacity='0.8'/%3E%3Ccircle cx='400' cy='200' r='100' fill='none' stroke='%23a855f7' stroke-width='2' opacity='0.4'/%3E%3Ccircle cx='400' cy='200' r='120' fill='none' stroke='%23a855f7' stroke-width='1' opacity='0.2'/%3E%3Cpath d='M 320 200 Q 360 150 400 200' stroke='%23a855f7' stroke-width='2' fill='none' opacity='0.6'/%3E%3Cpath d='M 400 200 Q 440 250 480 200' stroke='%23a855f7' stroke-width='2' fill='none' opacity='0.6'/%3E%3Ctext x='400' y='360' font-family='monospace' font-size='24' fill='%23a855f7' text-anchor='middle'%3ETHE CORE%3C/text%3E%3C/svg%3E",
+      locationImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect fill='%230a0a0a' width='800' height='400'/%3E%3Ccircle cx='400' cy='200' r='80' fill='%23000000' stroke='%23a855f7' stroke-width='4' opacity='0.8'/%3E%3Ccircle cx='400' cy='200' r='100' fill='none' stroke='%23a855f7' stroke-width='2' opacity='0.4'/%3E%3Ccircle cx='400' cy='200' r='120' fill='none' stroke='%23a855f7' stroke-width='1' opacity='0.2'/%3E%3Cpath d='M 320 200 Q 360 150 400 200' stroke='%23a855f7' stroke-width='2' fill='none' opacity='0.6'/%3E%3Cpath d='M 400 200 Q 440 250 480 200' stroke='%23a855f7' stroke-width='2' fill='none' opacity='0.6'/%3E%3Ctext x='400' y='360' font-family='monospace' font-size='24' fill='%23a855f7' text-anchor='middle'%3ESTORMCORE BASIN%3C/text%3E%3C/svg%3E",
       mapPosition: { x: 30, y: 70 },
       parent: null,
       surfaceLevel: true,
@@ -770,8 +772,13 @@ const GAME_DATA = {
     TIME_ANOMALY: { name: "Time Loop", description: "The core is generating a 3-second time loop. This explains the déjà vu.", mystery: "CORE", color: "#ec4899" },
     VOICE_IN_SYSTEM: { name: "Unknown Voice", description: "Someone or something is using the station's speakers. The voice called you 'friend'.", mystery: "CORE", color: "#ec4899" },
     HARMONIC_LINK: { name: "Harmonic Connection", description: "When you harmonize with the core, you can feel its thoughts. It knows you. It's been waiting for you.", mystery: "CORE", color: "#ec4899" },
-    CORE_PASSAGE: { name: "Core Access", description: "A hidden passage to the Core. How did you know it was there?", mystery: "CORE", revealsLocation: "core", color: "#ec4899" },
-    REACTIVE_COOLANT: { name: "Living Coolant", description: "The coolant is responding to your presence. It's synchronizing with your heartbeat.", mystery: "CORE", color: "#ec4899" },
+    CORE_PASSAGE: {
+      name: "Core Access",
+      description: "A hidden passage to the Core. How did you know it was there?",
+      mystery: "CORE",
+      revealsLocation: "stormcore_basin",  // Keep this as stormcore_basin
+      color: "#ec4899"
+    },    REACTIVE_COOLANT: { name: "Living Coolant", description: "The coolant is responding to your presence. It's synchronizing with your heartbeat.", mystery: "CORE", color: "#ec4899" },
 
     JAMMED_COMMS: { name: "Communication Jam", description: "Something is actively blocking all outbound signals. From inside the station.", mystery: "TEMPORAL", color: "#3b82f6" },
     COUNTDOWN: { name: "Unknown Countdown", description: "47 hours until... what? The logs don't say.", mystery: "TEMPORAL", color: "#3b82f6" },
@@ -881,7 +888,7 @@ function Planet3D({ currentLocation, onLocationClick, discoveredClues }) {
   const surfaceLocations = [
     { key: 'station', name: 'The Station', emoji: '🏢', color: '#06b6d4', lat: 20, lon: 0 },
     { key: 'facility', name: 'The Facility', emoji: '🧊', color: '#3b82f6', lat: -15, lon: 90 },
-    { key: 'core', name: 'The Core', emoji: '⚫', color: '#a855f7', lat: 25, lon: 180 },
+    { key: 'stormcore_basin', name: 'Stormcore Basin', emoji: '⚫', color: '#a855f7', lat: 25, lon: 180 },  // Changed from 'core'
     { key: 'gardens', name: 'The Gardens', emoji: '🌿', color: '#22c55e', lat: -20, lon: 270 }
   ];
 
@@ -1723,26 +1730,17 @@ export default function MysteryGame() {
         <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-8 font-sans">
           <div className="max-w-2xl w-full text-center space-y-8 p-8 bg-slate-800/30 rounded-2xl backdrop-blur-sm border border-slate-700/50">
             <div className="space-y-4">
-              <h1 className="text-6xl font-bold text-cyan-400 tracking-wider">ECHO</h1>
+              <h1 className="text-6xl font-bold text-cyan-400 tracking-wider">OMNIVORES RULE</h1>
               <p className="text-xl text-slate-300 italic">A Mystery in the Void</p>
-            </div>
-            <div className="space-y-4 text-slate-400 max-w-xl mx-auto">
-              <p>You are alone on a forgotten station at the edge of known space.</p>
-              <p>Something happened here. Something you've forgotten.</p>
-              <p>Use your tools to uncover the truth.</p>
+
             </div>
 
             <button
                 onClick={startGame}
                 className="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-cyan-900/50"
             >
-              Begin Transmission
+              Begin
             </button>
-
-            <div className="pt-8 space-y-2 text-sm text-slate-500">
-              <p>Listen. Speak. Sense. Power.</p>
-              <p className="text-xs">Each action reveals something new</p>
-            </div>
           </div>
         </div>
     );
@@ -1762,7 +1760,7 @@ export default function MysteryGame() {
               >
                 <Home size={18} className="md:w-5 md:h-5"/>
               </button>
-              <h1 className="text-lg md:text-xl font-bold text-cyan-400">ECHO</h1>
+              <h1 className="text-lg md:text-xl font-bold text-cyan-400">Omnivores Rule</h1>
             </div>
 
             <button
@@ -1838,7 +1836,82 @@ export default function MysteryGame() {
                 </div>
 
                 <div className="p-4 md:p-6 overflow-y-auto max-h-[calc(95vh-80px)] md:max-h-[calc(85vh-100px)]">
-                  {/* Content remains the same but uses responsive classes */}
+                  {knowledgeView === 'list' ? (
+                      // List View
+                      <div className="space-y-4">
+                        {Object.keys(cluesByMystery).map(mystery => (
+                            <div key={mystery} className="space-y-2">
+                              <h4 className="font-semibold text-base md:text-lg" style={{color: cluesByMystery[mystery][0]?.color}}>
+                                {mystery}
+                              </h4>
+                              <div className="space-y-2">
+                                {cluesByMystery[mystery].map(clue => (
+                                    <div key={clue.id} className="p-2 md:p-3 bg-slate-700/50 rounded-lg border-l-2" style={{borderColor: clue.color}}>
+                                      <div className="font-semibold text-xs md:text-sm" style={{color: clue.color}}>{clue.name}</div>
+                                      <div className="text-xs text-slate-300 mt-1">{clue.description}</div>
+                                    </div>
+                                ))}
+                              </div>
+                            </div>
+                        ))}
+                        {Object.keys(cluesByMystery).length === 0 && (
+                            <p className="text-slate-500 text-center italic text-sm md:text-base">No clues discovered yet. Explore to uncover mysteries!</p>
+                        )}
+                      </div>
+                  ) : (
+                      // Web View
+                      <div className="relative h-64 md:h-96 bg-slate-900 rounded-xl overflow-hidden">
+                        <svg className="w-full h-full" viewBox="0 0 400 400">
+                          {/* Draw connections between clues */}
+                          {Object.values(cluesByMystery).flat().map((clue, i) =>
+                              Object.values(cluesByMystery).flat().slice(i + 1).map((otherClue, j) => {
+                                if (clue.mystery === otherClue.mystery) {
+                                  const x1 = 50 + (i % 8) * 40;
+                                  const y1 = 50 + Math.floor(i / 8) * 40;
+                                  const x2 = 50 + ((i + j + 1) % 8) * 40;
+                                  const y2 = 50 + Math.floor((i + j + 1) / 8) * 40;
+                                  return (
+                                      <line key={`${clue.id}-${otherClue.id}`} x1={x1} y1={y1} x2={x2} y2={y2}
+                                            stroke={clue.color} strokeWidth="1" opacity="0.3"/>
+                                  );
+                                }
+                                return null;
+                              })
+                          )}
+
+                          {/* Draw clue nodes */}
+                          {Object.values(cluesByMystery).flat().map((clue, i) => {
+                            const x = 50 + (i % 8) * 40;
+                            const y = 50 + Math.floor(i / 8) * 40;
+                            return (
+                                <g key={clue.id}>
+                                  <circle cx={x} cy={y} r="12" fill={clue.color} opacity="0.6"/>
+                                  <circle cx={x} cy={y} r="8" fill={clue.color}/>
+
+                                  {/* Clue name text */}
+                                  <text
+                                      x={x}
+                                      y={y + 20}
+                                      textAnchor="middle"
+                                      fontSize="8"
+                                      fill={clue.color}
+                                      fontWeight="600"
+                                  >
+                                    {clue.name.length > 15 ? clue.name.substring(0, 13) + '...' : clue.name}
+                                  </text>
+
+                                  <title>{clue.name}</title>
+                                </g>
+                            );
+                          })}
+                        </svg>
+                        {Object.keys(cluesByMystery).length === 0 && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <p className="text-slate-500 italic text-sm md:text-base">No clues to display</p>
+                            </div>
+                        )}
+                      </div>
+                  )}
                 </div>
               </div>
             </div>

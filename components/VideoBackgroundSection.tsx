@@ -1,6 +1,12 @@
 "use client";
 
 import { useState } from 'react';
+import JobPostingToggle from './JobPostingToggle';
+import FixedVideoBackground from './FixedVideoBackground';
+
+const SHOW_DEMO = process.env.NEXT_PUBLIC_SHOW_DEMO === 'true';
+const PRESS_KIT_URL =
+    'https://drive.google.com/drive/folders/1fi3LLX8VNoJErcJmpGym8Gu0c1HudtcT?usp=drive_link';
 
 export default function VideoBackgroundSection() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -25,21 +31,12 @@ export default function VideoBackgroundSection() {
 
     return (
         <>
-            <section className="relative min-h-screen w-full overflow-hidden">
-                {/* Video Background */}
-                <div className="absolute inset-0 w-full h-full">
-                    <video
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        src="/videos/cinematic.mp4"
-                        className="w-full h-full object-cover"
-                    />
-                </div>
+            <section className="relative min-h-screen w-full">
+                {/* Video Background (fixed, doesn't scroll) */}
+                <FixedVideoBackground />
 
                 {/* Overlay Content */}
-                <div className="relative z-10 bg-black/50 min-h-screen w-full flex items-center justify-center p-4 sm:p-6 md:p-8">
+                <div className="relative z-10 min-h-screen w-full flex items-center justify-center py-12 px-4 sm:px-6 md:px-8">
                     <div className="w-full max-w-4xl mx-auto text-center space-y-4 sm:space-y-6">
                         <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white px-4">
                             Imagining Post-Colonial Worlds
@@ -76,14 +73,29 @@ export default function VideoBackgroundSection() {
                                 View on Steam
                             </a>
                         </div>
+                        {/* Demo Button (toggle with NEXT_PUBLIC_SHOW_DEMO in .env.local) */}
+                        {SHOW_DEMO && (
+                            <button
+                                onClick={() => setShowPasswordModal(true)}
+                                className="w-full max-w-sm mx-auto px-6 py-4 sm:px-8 sm:py-4 bg-cyan-600 hover:bg-cyan-500 text-white text-base sm:text-lg font-bold rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95"
+                            >
+                                Try Private Demo
+                            </button>
+                        )}
 
-                        {/* Demo Button */}
-                        <button
-                            onClick={() => setShowPasswordModal(true)}
-                            className="w-full max-w-sm mx-auto px-6 py-4 sm:px-8 sm:py-4 bg-cyan-600 hover:bg-cyan-500 text-white text-base sm:text-lg font-bold rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95"
-                        >
-                            Try Private Demo
-                        </button>
+                        {/* Open roles: button under the Steam widget, roles expand below */}
+                        <div className="px-4">
+                            <JobPostingToggle>
+                                <a
+                                    href={PRESS_KIT_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-block px-6 py-3 rounded-full font-semibold text-[15px] text-slate-200 border border-slate-400 bg-slate-900/60 hover:bg-slate-900/80 transition-colors no-underline"
+                                >
+                                    Press kit
+                                </a>
+                            </JobPostingToggle>
+                        </div>
                     </div>
                 </div>
             </section>
