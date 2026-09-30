@@ -42,7 +42,11 @@ export const roles: Role[] = [
             'Track deliverables against a drafted milestone schedule (Sept 2026 – May 2027) and flag risks or delays early. The schedule includes rough dates for demo builds, hiring timelines, and other internal deliverables.',
             'Coordinate day-to-day communication between team members (illustrators, technical artist, storyboard artist, composer, sound designer): scheduling check-ins, relaying updates, and keeping everyone aligned on due dates.',
             'Maintain lightweight documentation: task lists, timelines, and a deliverable tracker.',
-            'Support the hiring process for 3 upcoming contract roles by helping with scheduling and logistics (not final decisions): Concept Artist/Illustrator (Oct 2026), Technical Artist/3D Modeler (Jan 2027), and Animator (Jan 2027).',
+            'Support the hiring process for 3 upcoming contract roles by helping with scheduling and logistics (not final decisions): ' +
+            'Concept Artist/Illustrator (Nov 2026), ' +
+            'Technical Artist/3D Artist (Jan 2027), ' +
+            'Animator (Jan 2027),' +
+            'Audio Designer and/or composer (March 2027)',
         ],
         requirements: [
             'Experience managing indie game or creative-media production, ideally with a small/distributed team.',
@@ -68,7 +72,7 @@ export const roles: Role[] = [
     },
     {
         id: 'concept-art-illustrator',
-        title: 'Part-Time Concept Art Illustrator',
+        title: 'Concept Art Illustrator',
         type: 'Contract, part-time',
         location: 'Remote',
         summary:
