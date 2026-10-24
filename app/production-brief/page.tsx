@@ -4,7 +4,7 @@ import { CONTACT_EMAIL } from '../../data/roles';
 
 // Unlisted page: not linked anywhere on the site, and hidden from search engines.
 export const metadata: Metadata = {
-    title: 'Production overview | omnivoOres Rule',
+    title: 'Production Overview | Omnivores Rule',
     robots: { index: false, follow: false, nocache: true },
 };
 

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import JobPostingToggle from './JobPostingToggle';
 import FixedVideoBackground from './FixedVideoBackground';
+import TrailerPlayer from './TrailerPlayer';
 
 const SHOW_DEMO = process.env.NEXT_PUBLIC_SHOW_DEMO === 'true';
 const PRESS_KIT_URL =
@@ -37,22 +38,27 @@ export default function VideoBackgroundSection() {
 
                 {/* Overlay Content */}
                 <div className="relative z-10 min-h-screen w-full flex items-center justify-center py-12 px-4 sm:px-6 md:px-8">
-                    <div className="w-full max-w-4xl mx-auto text-center space-y-4 sm:space-y-6">
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white px-4">
+                    <div className="w-full max-w-4xl mx-auto text-center flex flex-col items-center gap-4 sm:gap-5">
+                        {/* 1. Title */}
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white px-4 mb-6 sm:mb-10">
                             Imagining Post-Colonial Worlds
                         </h2>
 
-                        <div className="flex justify-center px-4">
-                            <img
-                                src="/img/Logo-4k-v3.png"
-                                alt="Logo"
-                                className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain"
-                                style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.7))" }}
-                            />
+                        {/* 2. Trailer */}
+                        <div className="px-4 w-full">
+                            <div className="w-full max-w-3xl mx-auto text-left rounded-xl border border-slate-700 bg-slate-900/80 backdrop-blur-sm p-4 sm:p-5 space-y-3">
+                                <h3
+                                    className="text-xl font-bold text-slate-100 underline decoration-2 underline-offset-[5px] text-center"
+                                    style={{ fontFamily: '"Baron Neue", system-ui, -apple-system, "Segoe UI", sans-serif' }}
+                                >
+                                    Trailer
+                                </h3>
+                                <TrailerPlayer src="/videos/trailer.mp4" poster="/img/trailer-poster.jpg" />
+                            </div>
                         </div>
 
-                        {/* Steam Widget - Hidden on small mobile */}
-                        <div className="hidden sm:flex justify-center px-4">
+                        {/* 3. Steam Widget - Hidden on small mobile */}
+                        <div className="hidden sm:flex justify-center px-4 w-full">
                             <iframe
                                 src="https://store.steampowered.com/widget/3221630/"
                                 width="646"
@@ -63,7 +69,7 @@ export default function VideoBackgroundSection() {
                         </div>
 
                         {/* Mobile-friendly Steam link for small screens */}
-                        <div className="sm:hidden px-4">
+                        <div className="sm:hidden px-4 w-full">
                             <a
                                 href="https://store.steampowered.com/app/3221630/"
                                 target="_blank"
@@ -73,6 +79,7 @@ export default function VideoBackgroundSection() {
                                 View on Steam
                             </a>
                         </div>
+
                         {/* Demo Button (toggle with NEXT_PUBLIC_SHOW_DEMO in .env.local) */}
                         {SHOW_DEMO && (
                             <button
@@ -83,8 +90,8 @@ export default function VideoBackgroundSection() {
                             </button>
                         )}
 
-                        {/* Open roles: button under the Steam widget, roles expand below */}
-                        <div className="px-4">
+                        {/* 4. Open roles (bigger gap above) */}
+                        <div className="px-4 w-full mt-8 sm:mt-12">
                             <JobPostingToggle>
                                 <a
                                     href={PRESS_KIT_URL}
@@ -95,6 +102,16 @@ export default function VideoBackgroundSection() {
                                     Press kit
                                 </a>
                             </JobPostingToggle>
+                        </div>
+
+                        {/* 5. Logo at the foot of the page (biggest gap above) */}
+                        <div className="flex justify-center px-4 mt-12 sm:mt-20 pb-6">
+                            <img
+                                src="/img/Logo-4k-v3.png"
+                                alt="Logo"
+                                className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain"
+                                style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.7))" }}
+                            />
                         </div>
                     </div>
                 </div>
