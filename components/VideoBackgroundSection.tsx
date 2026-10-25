@@ -4,6 +4,7 @@ import { useState } from 'react';
 import JobPostingToggle from './JobPostingToggle';
 import FixedVideoBackground from './FixedVideoBackground';
 import TrailerPlayer from './TrailerPlayer';
+import SteamWidget from './SteamWidget';
 
 const SHOW_DEMO = process.env.NEXT_PUBLIC_SHOW_DEMO === 'true';
 const PRESS_KIT_URL =
@@ -51,33 +52,15 @@ export default function VideoBackgroundSection() {
                                     className="text-xl font-bold text-slate-100 underline decoration-2 underline-offset-[5px] text-center"
                                     style={{ fontFamily: '"Baron Neue", system-ui, -apple-system, "Segoe UI", sans-serif' }}
                                 >
-                                    Trailer
+                                    Trailer (Sept 2026)
                                 </h3>
                                 <TrailerPlayer src="/videos/trailer.mp4" poster="/img/trailer-poster.jpg" />
                             </div>
                         </div>
 
-                        {/* 3. Steam Widget - Hidden on small mobile */}
-                        <div className="hidden sm:flex justify-center px-4 w-full">
-                            <iframe
-                                src="https://store.steampowered.com/widget/3221630/"
-                                width="646"
-                                height="190"
-                                className="w-full max-w-2xl rounded-lg shadow-xl"
-                                title="Steam"
-                            />
-                        </div>
-
-                        {/* Mobile-friendly Steam link for small screens */}
-                        <div className="sm:hidden px-4 w-full">
-                            <a
-                                href="https://store.steampowered.com/app/3221630/"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-block w-full max-w-sm px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-800 text-white font-bold rounded-xl shadow-lg hover:from-blue-700 hover:to-blue-900 transition-all"
-                            >
-                                View on Steam
-                            </a>
+                        {/* 3. Steam widget (scales down on mobile) */}
+                        <div className="px-4 w-full">
+                            <SteamWidget />
                         </div>
 
                         {/* Demo Button (toggle with NEXT_PUBLIC_SHOW_DEMO in .env.local) */}
